@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="05_content_three_columns" data-pptx-layout-name="07 三栏内容">
+  <ns0:rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false"/>
+  <ns0:rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark"/>
+  <ns0:rect id="column-divider-1" x="446.78" y="169" width="1.33" height="473.28" fill="#888888" fill-opacity="0.25" data-pptx-brand-fill="content-divider" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="column-divider-2" x="834.11" y="169" width="1.33" height="473.28" fill="#888888" fill-opacity="0.25" data-pptx-brand-fill="content-divider" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80.72 19.15 1120.32 86.4" data-pptx-vertical-align="bottom">
+    <ns0:text id="title-carrier" data-pptx-carrier="true" x="80.72" y="94.35" font-size="32" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{PAGE_TITLE}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-idx="1" data-pptx-bounds="80.5 106.03 1120.32 34.7" data-pptx-vertical-align="top">
+    <ns0:text id="subtitle-carrier" data-pptx-carrier="true" x="80.5" y="130.03" font-size="26.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SUBTITLE}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="column-1-body-slot" data-pptx-placeholder="body" data-pptx-idx="2" data-pptx-bounds="80.5 168 345.6 473.28" data-pptx-vertical-align="top">
+    <ns0:text id="column-1-body-carrier" data-pptx-carrier="true" x="80.5" y="187.2" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{COL_1_BODY}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="column-2-body-slot" data-pptx-placeholder="body" data-pptx-idx="3" data-pptx-bounds="467.2 168.72 345.6 473.28" data-pptx-vertical-align="top">
+    <ns0:text id="column-2-body-carrier" data-pptx-carrier="true" x="467.2" y="187.92" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{COL_2_BODY}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="column-3-body-slot" data-pptx-placeholder="body" data-pptx-idx="4" data-pptx-bounds="853.9 169.44 345.6 473.28" data-pptx-vertical-align="top">
+    <ns0:text id="column-3-body-carrier" data-pptx-carrier="true" x="853.9" y="188.64" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{COL_3_BODY}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-idx="5" data-pptx-bounds="80 674.4 38.4 38.4" data-pptx-vertical-align="center">
+    <ns0:text id="page-number-carrier" data-pptx-carrier="true" x="80" y="697.01" font-size="10.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{PAGE_NUM}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="footer-slot" data-pptx-placeholder="footer" data-pptx-idx="6" data-pptx-bounds="118.4 674.43 921.6 38.33" data-pptx-vertical-align="center">
+    <ns0:text id="footer-carrier" data-pptx-carrier="true" x="118.4" y="697.01" font-size="10.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SECTION_NAME}}</ns0:text>
+  </ns0:g>
+</ns0:svg>

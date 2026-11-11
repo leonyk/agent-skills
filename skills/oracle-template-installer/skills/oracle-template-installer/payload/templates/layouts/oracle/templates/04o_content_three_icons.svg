@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="06_content_three_icons" data-pptx-layout-name="19 三图标内容">
+  <ns0:rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false"/>
+  <ns0:rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark"/>
+  <ns0:rect id="column-divider-1" x="419.66" y="166.74" width="1.33" height="459.68" fill="#888888" fill-opacity="0.5" data-pptx-brand-fill="content-divider" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="column-divider-2" x="824.85" y="166.74" width="1.33" height="459.68" fill="#888888" fill-opacity="0.5" data-pptx-brand-fill="content-divider" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80.72 19.15 1120.32 86.4" data-pptx-vertical-align="bottom">
+    <ns0:text id="title-carrier" data-pptx-carrier="true" x="80.72" y="94.35" font-size="32" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{PAGE_TITLE}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="icon-1-slot" data-pptx-placeholder="picture" data-pptx-idx="1" data-pptx-bounds="94.26 199.89 198.83 178.28">
+    <ns0:svg id="icon-1-carrier" data-pptx-carrier="true" x="94.26" y="199.89" width="198.83" height="178.28" viewBox="0.01421 0 0.97158 1" preserveAspectRatio="none" overflow="hidden">
+      <ns0:image href="../images/image99.svg" x="0" y="0" width="1" height="1" preserveAspectRatio="none"/>
+    </ns0:svg>
+  </ns0:g>
+  <ns0:g id="column-1-heading-slot" data-pptx-placeholder="body" data-pptx-idx="2" data-pptx-bounds="95.66 418.24 239.05 34" data-pptx-vertical-align="center">
+    <ns0:text id="column-1-heading-carrier" data-pptx-carrier="true" x="95.66" y="442.07" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{COL_1_HEAD}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="column-1-body-slot" data-pptx-placeholder="body" data-pptx-idx="3" data-pptx-bounds="95.66 459.57 239.05 130.7" data-pptx-vertical-align="top">
+    <ns0:text id="column-1-body-carrier" data-pptx-carrier="true" x="95.66" y="478.77" font-size="21.33" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{COL_1_BODY}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="icon-2-slot" data-pptx-placeholder="picture" data-pptx-idx="4" data-pptx-bounds="499.45 199.88 198.83 178.28">
+    <ns0:svg id="icon-2-carrier" data-pptx-carrier="true" x="499.45" y="199.88" width="198.83" height="178.28" viewBox="0.02742 0 0.94516 1" preserveAspectRatio="none" overflow="hidden">
+      <ns0:image href="../images/image100.svg" x="0" y="0" width="1" height="1" preserveAspectRatio="none"/>
+    </ns0:svg>
+  </ns0:g>
+  <ns0:g id="column-2-heading-slot" data-pptx-placeholder="body" data-pptx-idx="5" data-pptx-bounds="503.66 418.24 239.05 34" data-pptx-vertical-align="center">
+    <ns0:text id="column-2-heading-carrier" data-pptx-carrier="true" x="503.66" y="442.07" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{COL_2_HEAD}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="column-2-body-slot" data-pptx-placeholder="body" data-pptx-idx="6" data-pptx-bounds="503.66 459.57 239.05 130.7" data-pptx-vertical-align="top">
+    <ns0:text id="column-2-body-carrier" data-pptx-carrier="true" x="503.66" y="478.77" font-size="21.33" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{COL_2_BODY}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="icon-3-slot" data-pptx-placeholder="picture" data-pptx-idx="7" data-pptx-bounds="904.65 202.5 198.83 178.28">
+    <ns0:svg id="icon-3-carrier" data-pptx-carrier="true" x="904.65" y="202.5" width="198.83" height="178.28" viewBox="0.01667 0 0.96666 1" preserveAspectRatio="none" overflow="hidden">
+      <ns0:image href="../images/image101.svg" x="0" y="0" width="1" height="1" preserveAspectRatio="none"/>
+    </ns0:svg>
+  </ns0:g>
+  <ns0:g id="column-3-heading-slot" data-pptx-placeholder="body" data-pptx-idx="8" data-pptx-bounds="907.96 418.24 239.05 34" data-pptx-vertical-align="center">
+    <ns0:text id="column-3-heading-carrier" data-pptx-carrier="true" x="907.96" y="442.07" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{COL_3_HEAD}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="column-3-body-slot" data-pptx-placeholder="body" data-pptx-idx="9" data-pptx-bounds="907.96 459.57 239.05 130.7" data-pptx-vertical-align="top">
+    <ns0:text id="column-3-body-carrier" data-pptx-carrier="true" x="907.96" y="478.77" font-size="21.33" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{COL_3_BODY}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-idx="10" data-pptx-bounds="80 674.4 38.4 38.4" data-pptx-vertical-align="center">
+    <ns0:text id="page-number-carrier" data-pptx-carrier="true" x="80" y="697.01" font-size="10.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{PAGE_NUM}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="footer-slot" data-pptx-placeholder="footer" data-pptx-idx="11" data-pptx-bounds="118.4 674.43 921.6 38.33" data-pptx-vertical-align="center">
+    <ns0:text id="footer-carrier" data-pptx-carrier="true" x="118.4" y="697.01" font-size="10.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SECTION_NAME}}</ns0:text>
+  </ns0:g>
+</ns0:svg>

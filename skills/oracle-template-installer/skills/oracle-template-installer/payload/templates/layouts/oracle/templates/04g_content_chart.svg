@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="03d_content_chart" data-pptx-layout-name="11 图表与说明">
+<rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false" />
+<rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false" /><image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark" /><g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80.72 19.15 1120.32 86.4" data-pptx-vertical-align="bottom">
+<text id="title-carrier" data-pptx-carrier="true" x="80.72" y="94.35" font-size="32" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{PAGE_TITLE}}</text>
+</g>
+<g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-idx="1" data-pptx-bounds="80.5 106.03 1120.32 34.7" data-pptx-vertical-align="center">
+<text id="subtitle-carrier" data-pptx-carrier="true" x="80.5" y="130.03" font-size="26.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SUBTITLE}}</text>
+</g>
+<g id="chart-slot" data-pptx-placeholder="chart" data-pptx-idx="2" data-pptx-bounds="80 184 720 414">
+<g id="chart-carrier" data-pptx-carrier="true" data-pptx-replace-with="chart" data-pptx-native-authority="json">
+<metadata type="application/json">{"name": "oracle-example-chart", "x": 80, "y": 184, "width": 720, "height": 414, "type": "column", "categories": ["Q1", "Q2", "Q3", "Q4"], "series": [{"name": "Series A", "values": [42, 55, 63, 78]}, {"name": "Series B", "values": [48, 58, 68, 74]}], "show_legend": true, "legend_position": "bottom", "gap_width": 100, "axes": {"value": {"minimum": 0, "maximum": 100, "major_unit": 25, "major_gridlines": true}}, "style": {"colors": ["#DCE2E4", "#838F94"], "chart_area_fill": "#252A2D", "plot_area_fill": "#252A2D", "text_color": "#B8BFC1", "axis_color": "#5A6266", "grid_color": "#41494D", "font_family": "Arial", "axis_font_size": 18, "legend_font_size": 18}}</metadata>
+<rect x="80" y="184" width="720" height="414" fill="#252A2D" />
+<line id="grid-0" x1="136" y1="524.0" x2="776" y2="524.0" stroke="#41494D" stroke-width="1" />
+<text x="122.0" y="530.0" text-anchor="end" font-size="18" fill="#B8BFC1">0</text>
+<line id="grid-25" x1="136" y1="446.0" x2="776" y2="446.0" stroke="#41494D" stroke-width="1" />
+<text x="122.0" y="452.0" text-anchor="end" font-size="18" fill="#B8BFC1">25</text>
+<line id="grid-50" x1="136" y1="368.0" x2="776" y2="368.0" stroke="#41494D" stroke-width="1" />
+<text x="122.0" y="374.0" text-anchor="end" font-size="18" fill="#B8BFC1">50</text>
+<line id="grid-75" x1="136" y1="290.0" x2="776" y2="290.0" stroke="#41494D" stroke-width="1" />
+<text x="122.0" y="296.0" text-anchor="end" font-size="18" fill="#B8BFC1">75</text>
+<line id="grid-100" x1="136" y1="212.0" x2="776" y2="212.0" stroke="#41494D" stroke-width="1" />
+<text x="122.0" y="218.0" text-anchor="end" font-size="18" fill="#B8BFC1">100</text>
+<rect x="166" y="392.96000000000004" width="40" height="131.04" fill="#DCE2E4" />
+<rect x="214" y="374.24" width="40" height="149.76" fill="#838F94" />
+<text x="210.0" y="554.0" text-anchor="middle" font-size="18" fill="#B8BFC1">Q1</text>
+<rect x="326" y="352.4" width="40" height="171.6" fill="#DCE2E4" />
+<rect x="374" y="343.03999999999996" width="40" height="180.96" fill="#838F94" />
+<text x="370.0" y="554.0" text-anchor="middle" font-size="18" fill="#B8BFC1">Q2</text>
+<rect x="486" y="327.44" width="40" height="196.56" fill="#DCE2E4" />
+<rect x="534" y="311.84000000000003" width="40" height="212.16" fill="#838F94" />
+<text x="530.0" y="554.0" text-anchor="middle" font-size="18" fill="#B8BFC1">Q3</text>
+<rect x="646" y="280.64" width="40" height="243.36" fill="#DCE2E4" />
+<rect x="694" y="293.12" width="40" height="230.88" fill="#838F94" />
+<text x="690.0" y="554.0" text-anchor="middle" font-size="18" fill="#B8BFC1">Q4</text>
+<rect x="250" y="576" width="14" height="14" fill="#DCE2E4" />
+<text x="274.0" y="588.0" fill="#B8BFC1" font-size="18">Series A</text>
+<rect x="466" y="576" width="14" height="14" fill="#838F94" />
+<text x="490.0" y="588.0" fill="#B8BFC1" font-size="18">Series B</text>
+</g>
+</g>
+<g id="insight-title-slot" data-pptx-placeholder="body" data-pptx-idx="3" data-pptx-bounds="856 184 344 42">
+<text id="insight-title-carrier" data-pptx-carrier="true" x="856.0" y="211.0" font-size="30" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{INSIGHT_HEADING}}</text>
+</g>
+<g id="insight-body-slot" data-pptx-placeholder="body" data-pptx-idx="4" data-pptx-bounds="856 252 344 340">
+<text id="insight-body-carrier" data-pptx-carrier="true" x="856.0" y="275.4" font-size="26" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{CONTENT_AREA}}</text>
+</g>
+<g id="source-slot" data-pptx-placeholder="body" data-pptx-idx="5" data-pptx-bounds="80 624 1120 28" data-pptx-vertical-align="center">
+<text id="source-carrier" data-pptx-carrier="true" x="80.0" y="638.4" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SOURCE}}</text>
+</g>
+<g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-idx="6" data-pptx-bounds="80 674.4 38.4 38.4" data-pptx-vertical-align="center">
+<text id="page-number-carrier" data-pptx-carrier="true" x="80.0" y="697.34" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="10.67" data-pptx-native-defaults="true">{{PAGE_NUM}}</text>
+</g>
+<g id="footer-slot" data-pptx-placeholder="footer" data-pptx-idx="7" data-pptx-bounds="118.4 674.43 921.6 38.33" data-pptx-vertical-align="center">
+<text id="footer-carrier" data-pptx-carrier="true" x="118.4" y="697.33" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="10.67" data-pptx-native-defaults="true">{{SECTION_NAME}}</text>
+</g>
+</svg>

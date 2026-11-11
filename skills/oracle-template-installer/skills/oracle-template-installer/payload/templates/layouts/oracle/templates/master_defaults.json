@@ -1,0 +1,1386 @@
+{
+  "schema": "ppt-master.master-defaults.v1",
+  "masters": {
+    "oracle-master": {
+      "placeholders": {
+        "title": "master-defaults/title.xml",
+        "body": "master-defaults/body.xml",
+        "slide-number": "master-defaults/slide-number.xml",
+        "footer": "master-defaults/footer.xml",
+        "date": "master-defaults/date.xml"
+      },
+      "text_styles": "master-defaults/text-styles.xml",
+      "background": "master-defaults/master-background.xml"
+    }
+  },
+  "policies": {
+    "policy-01": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-01-body.xml",
+      "list_style": "master-defaults/policy-01-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-02": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-02-body.xml",
+      "list_style": "master-defaults/policy-02-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-03": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-03-body.xml",
+      "list_style": "master-defaults/policy-03-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-04": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-04-body.xml",
+      "list_style": "master-defaults/policy-04-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-05": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-05-body.xml",
+      "list_style": "master-defaults/policy-05-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-06": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-06-body.xml",
+      "list_style": "master-defaults/policy-06-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-07": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-07-body.xml",
+      "list_style": "master-defaults/policy-07-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-08": {
+      "geometry": "inherit",
+      "body_properties": "master-defaults/policy-08-body.xml",
+      "list_style": "master-defaults/policy-08-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-09": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-09-body.xml",
+      "list_style": "master-defaults/policy-09-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-10": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-10-body.xml",
+      "list_style": "master-defaults/policy-10-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-11": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-11-body.xml",
+      "list_style": "master-defaults/policy-11-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-12": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-12-body.xml",
+      "list_style": "master-defaults/policy-12-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-13": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-13-body.xml",
+      "list_style": "master-defaults/policy-13-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-14": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-14-body.xml",
+      "list_style": "master-defaults/policy-14-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-15": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-15-body.xml",
+      "list_style": "master-defaults/policy-15-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-16": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-16-body.xml",
+      "list_style": "master-defaults/policy-16-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-17": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-17-body.xml",
+      "list_style": "master-defaults/policy-17-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-18": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-18-body.xml",
+      "list_style": "master-defaults/policy-18-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-19": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-19-body.xml",
+      "list_style": "master-defaults/policy-19-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-20": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-20-body.xml",
+      "list_style": "master-defaults/policy-20-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-21": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-21-body.xml",
+      "list_style": "master-defaults/policy-21-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-22": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-22-body.xml",
+      "list_style": "master-defaults/policy-22-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-23": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-23-body.xml",
+      "list_style": "master-defaults/policy-23-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "policy-24": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-24-body.xml",
+      "list_style": "master-defaults/policy-24-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "narrow-footer": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-08-body.xml",
+      "list_style": "master-defaults/policy-08-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "native-picture": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-07-body.xml",
+      "list_style": "master-defaults/policy-07-list.xml",
+      "slide_inherits": [
+        "geometry"
+      ]
+    },
+    "native-table": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-07-body.xml",
+      "list_style": "master-defaults/policy-07-list.xml",
+      "slide_inherits": []
+    },
+    "native-chart": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-07-body.xml",
+      "list_style": "master-defaults/policy-07-list.xml",
+      "slide_inherits": []
+    },
+    "field-dark-policy-08": {
+      "geometry": "inherit",
+      "body_properties": "master-defaults/policy-08-body.xml",
+      "list_style": "master-defaults/field-dark-policy-08.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "field-dark-narrow-footer": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-08-body.xml",
+      "list_style": "master-defaults/field-dark-narrow-footer.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "field-dark-policy-04": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/policy-04-body.xml",
+      "list_style": "master-defaults/field-dark-policy-04.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "source-normal-title": {
+      "geometry": "inherit",
+      "body_properties": "master-defaults/policy-08-body.xml",
+      "list_style": "master-defaults/normal-title-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "cover-date-policy": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/cover-date-body.xml",
+      "list_style": "master-defaults/field-dark-policy-04.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-three-column-subtitle": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-three-column-subtitle-body.xml",
+      "list_style": "master-defaults/v13-three-column-subtitle-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-three-column-body": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-three-column-body-body.xml",
+      "list_style": "master-defaults/v13-three-column-body-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-icon-heading": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-icon-heading-body.xml",
+      "list_style": "master-defaults/v13-icon-heading-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-icon-body": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-icon-body-body.xml",
+      "list_style": "master-defaults/v13-icon-body-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-07_content_three_points-title": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-07_content_three_points-title-body.xml",
+      "list_style": "master-defaults/v13-07_content_three_points-title-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-point-intro": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-point-intro-body.xml",
+      "list_style": "master-defaults/v13-point-intro-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-point-body": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-point-body-body.xml",
+      "list_style": "master-defaults/v13-point-body-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-08_toc-title": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-08_toc-title-body.xml",
+      "list_style": "master-defaults/v13-08_toc-title-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-agenda-title": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-agenda-title-body.xml",
+      "list_style": "master-defaults/v13-agenda-title-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-agenda-desc": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-agenda-desc-body.xml",
+      "list_style": "master-defaults/v13-agenda-desc-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-chapter-image-title": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-chapter-image-title-body.xml",
+      "list_style": "master-defaults/v13-chapter-image-title-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    },
+    "v13-chapter-image-subtitle": {
+      "geometry": "svg-bounds",
+      "body_properties": "master-defaults/v13-chapter-image-subtitle-body.xml",
+      "list_style": "master-defaults/v13-chapter-image-subtitle-list.xml",
+      "slide_inherits": [
+        "geometry",
+        "body.insets",
+        "body.anchor",
+        "body.layout",
+        "text.size",
+        "text.faces",
+        "text.bold",
+        "text.italic",
+        "text.color",
+        "text.decoration",
+        "text.tracking",
+        "text.baseline",
+        "paragraph.spacing",
+        "paragraph.list",
+        "paragraph.align"
+      ]
+    }
+  },
+  "layouts": {
+    "01_cover": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "policy-01",
+        "subtitle-slot": "policy-02",
+        "author-slot": "policy-03",
+        "date-slot": "cover-date-policy"
+      },
+      "color_map": "master-defaults/dark-map.xml"
+    },
+    "02_chapter": {
+      "master": "oracle-master",
+      "slots": {
+        "number-slot": "policy-05",
+        "title-slot": "policy-06",
+        "description-slot": "policy-07",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 5,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03a_content_single": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "policy-09",
+        "body-slot": "policy-08",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 5,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03b_content_dual": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "policy-09",
+        "left-heading-slot": "policy-10",
+        "left-body-slot": "policy-11",
+        "right-heading-slot": "policy-10",
+        "right-body-slot": "policy-11",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 8,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03c_content_comparison": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "policy-09",
+        "left-heading-slot": "policy-12",
+        "left-body-slot": "policy-11",
+        "right-heading-slot": "policy-12",
+        "right-body-slot": "policy-11",
+        "takeaway-slot": "policy-13",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 9,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03d_content_chart": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "policy-09",
+        "chart-slot": "native-chart",
+        "insight-title-slot": "policy-14",
+        "insight-body-slot": "policy-11",
+        "source-slot": "policy-15",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 8,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03e_content_table": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "policy-09",
+        "table-slot": "native-table",
+        "takeaway-slot": "policy-16",
+        "source-slot": "policy-15",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 7,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03f_content_image_right": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "policy-07",
+        "subtitle-slot": "policy-09",
+        "body-slot": "policy-07",
+        "picture-slot": "native-picture",
+        "caption-slot": "policy-15",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 7,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03g_content_image_left": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "policy-09",
+        "picture-slot": "native-picture",
+        "caption-slot": "policy-15",
+        "body-slot": "policy-11",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 7,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03h_content_grouped_image": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "policy-07",
+        "subtitle-slot": "policy-09",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-narrow-footer",
+        "group-1-heading-slot": "policy-13",
+        "group-1-body-slot": "policy-17",
+        "group-2-heading-slot": "policy-13",
+        "group-2-body-slot": "policy-17",
+        "group-3-heading-slot": "policy-13",
+        "group-3-body-slot": "policy-17",
+        "picture-slot": "native-picture",
+        "caption-slot": "policy-15"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 13,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03i_content_two_images": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08",
+        "left-picture-slot": "native-picture",
+        "right-picture-slot": "native-picture",
+        "left-caption-slot": "policy-13",
+        "left-description-slot": "policy-17",
+        "right-caption-slot": "policy-13",
+        "right-description-slot": "policy-17"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 11,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03j_content_left_rail": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "policy-07",
+        "subtitle-slot": "policy-09",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08",
+        "rail-body-slot": "policy-17",
+        "main-content-slot": "policy-07"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 7,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03k_content_row_comparison": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08",
+        "left-heading-slot": "policy-18",
+        "right-heading-slot": "policy-18",
+        "left-row-1-slot": "policy-19",
+        "right-row-1-slot": "policy-19",
+        "left-row-2-slot": "policy-19",
+        "right-row-2-slot": "policy-19",
+        "left-row-3-slot": "policy-19",
+        "right-row-3-slot": "policy-19",
+        "left-row-4-slot": "policy-19",
+        "right-row-4-slot": "policy-19",
+        "left-row-5-slot": "policy-19",
+        "right-row-5-slot": "policy-19"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 17,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03l_content_screenshot": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "policy-07",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08",
+        "description-slot": "policy-17",
+        "screenshot-slot": "native-picture",
+        "caption-slot": "policy-20"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 8,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03m_content_single_metric": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08",
+        "value-slot": "policy-21",
+        "metric-description-slot": "policy-07",
+        "source-slot": "policy-22"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 8,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "03n_content_chart_four_notes": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08",
+        "chart-slot": "native-chart",
+        "a-heading-slot": "policy-13",
+        "a-body-slot": "policy-23",
+        "b-heading-slot": "policy-13",
+        "b-body-slot": "policy-23",
+        "c-heading-slot": "policy-13",
+        "c-body-slot": "policy-23",
+        "d-heading-slot": "policy-13",
+        "d-body-slot": "policy-23",
+        "source-slot": "policy-15"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 15,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "04_ending": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "policy-01",
+        "subtitle-slot": "policy-24",
+        "contact-slot": "policy-03",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "optional_date_idx": 5,
+      "optional_date_policy": "field-dark-policy-08",
+      "background": "master-defaults/dark-background.xml"
+    },
+    "05_content_three_columns": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "subtitle-slot": "v13-three-column-subtitle",
+        "column-1-body-slot": "v13-three-column-body",
+        "column-2-body-slot": "v13-three-column-body",
+        "column-3-body-slot": "v13-three-column-body",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "background": "master-defaults/dark-background.xml",
+      "optional_date_idx": 7,
+      "optional_date_policy": "field-dark-policy-08"
+    },
+    "06_content_three_icons": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "icon-1-slot": "native-picture",
+        "column-1-heading-slot": "v13-icon-heading",
+        "column-1-body-slot": "v13-icon-body",
+        "icon-2-slot": "native-picture",
+        "column-2-heading-slot": "v13-icon-heading",
+        "column-2-body-slot": "v13-icon-body",
+        "icon-3-slot": "native-picture",
+        "column-3-heading-slot": "v13-icon-heading",
+        "column-3-body-slot": "v13-icon-body",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "background": "master-defaults/dark-background.xml",
+      "optional_date_idx": 12,
+      "optional_date_policy": "field-dark-policy-08"
+    },
+    "07_content_three_points": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "v13-07_content_three_points-title",
+        "intro-slot": "v13-point-intro",
+        "point-1-icon-slot": "native-picture",
+        "point-1-body-slot": "v13-point-body",
+        "point-2-icon-slot": "native-picture",
+        "point-2-body-slot": "v13-point-body",
+        "point-3-icon-slot": "native-picture",
+        "point-3-body-slot": "v13-point-body",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "background": "master-defaults/dark-background.xml",
+      "optional_date_idx": 10,
+      "optional_date_policy": "field-dark-policy-08"
+    },
+    "08_toc": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "v13-08_toc-title",
+        "item-1-title-slot": "v13-agenda-title",
+        "item-1-body-slot": "v13-agenda-desc",
+        "item-2-title-slot": "v13-agenda-title",
+        "item-2-body-slot": "v13-agenda-desc",
+        "item-3-title-slot": "v13-agenda-title",
+        "item-3-body-slot": "v13-agenda-desc",
+        "item-4-title-slot": "v13-agenda-title",
+        "item-4-body-slot": "v13-agenda-desc",
+        "item-5-title-slot": "v13-agenda-title",
+        "item-5-body-slot": "v13-agenda-desc",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "background": "master-defaults/dark-background.xml",
+      "optional_date_idx": 13,
+      "optional_date_policy": "field-dark-policy-08"
+    },
+    "09_chapter_image": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "v13-chapter-image-title",
+        "subtitle-slot": "v13-chapter-image-subtitle",
+        "picture-slot": "native-picture"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "background": "master-defaults/dark-background.xml",
+      "optional_date_idx": 3,
+      "optional_date_policy": "field-dark-policy-08"
+    },
+    "10_content_four_icons": {
+      "master": "oracle-master",
+      "slots": {
+        "title-slot": "source-normal-title",
+        "icon-1-slot": "native-picture",
+        "column-1-heading-slot": "v13-icon-heading",
+        "column-1-body-slot": "v13-icon-body",
+        "icon-2-slot": "native-picture",
+        "column-2-heading-slot": "v13-icon-heading",
+        "column-2-body-slot": "v13-icon-body",
+        "icon-3-slot": "native-picture",
+        "column-3-heading-slot": "v13-icon-heading",
+        "column-3-body-slot": "v13-icon-body",
+        "icon-4-slot": "native-picture",
+        "column-4-heading-slot": "v13-icon-heading",
+        "column-4-body-slot": "v13-icon-body",
+        "page-number-slot": "field-dark-policy-08",
+        "footer-slot": "field-dark-policy-08"
+      },
+      "color_map": "master-defaults/dark-map.xml",
+      "background": "master-defaults/dark-background.xml",
+      "optional_date_idx": 15,
+      "optional_date_policy": "field-dark-policy-08"
+    }
+  },
+  "preview_anchors": {
+    "title": {
+      "layout": "03a_content_single",
+      "slot": "title-slot"
+    },
+    "body": {
+      "layout": "03a_content_single",
+      "slot": "body-slot"
+    }
+  },
+  "color_bindings": {
+    "footer_light": {
+      "role": "footer_light",
+      "fallback": "666666"
+    },
+    "footer_dark": {
+      "role": "footer_dark",
+      "fallback": "B8B8B8"
+    }
+  },
+  "preview_colors": {
+    "dk1": "252A2D",
+    "dk2": "252A2D",
+    "lt1": "F3F3F3",
+    "lt2": "F3F3F3"
+  }
+}

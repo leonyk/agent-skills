@@ -1,0 +1,2985 @@
+--- a/references/pptx-structure-interface.md
++++ b/references/pptx-structure-interface.md
+@@ -43,6 +43,7 @@
+ | `data-pptx-layer="slide"` | direct full-canvas solid `<rect>` only | One-page background override written as Slide `p:bg` |
+ | `data-pptx-placeholder="..."` | direct slot `<g id>` | Reusable Layout slot whose visible content stays Slide-local |
+ | `data-pptx-bounds="x y width height"` | slot `<g>` | Mandatory positive reusable design-zone frame in SVG user units, at most two decimals per value |
++| `data-pptx-vertical-align="top"` / `"center"` / `"bottom"` | text-carrier slot `<g>` | Optional reusable vertical alignment, identical across a shared Layout. Body and text-object slots default to top; other unmarked text roles retain placement inferred from their authored carrier. |
+ | `data-pptx-idx="1"` | slot `<g>` | Retains an imported source placeholder index; optional for reconstructed layouts |
+ | `data-pptx-carrier="true"` | one compatible direct child of a normal slot | Binds that visible child as the real Slide placeholder carrier |
+ | `data-pptx-binding="proxy"` | composite `object` slot `<g>` only | Keeps the visible group ordinary and creates one hidden transparent binding proxy |
+--- a/scripts/apply_template.py
++++ b/scripts/apply_template.py
+@@ -36,6 +36,7 @@
+ if str(SCRIPT_DIR) not in sys.path:
+     sys.path.insert(0, str(SCRIPT_DIR))
+ 
++from brand_assets import BRAND_ASSETS_FILENAME, bind_brand_assets, load_brand_assets
+ from attribution_guard import require_skill_integrity  # noqa: E402
+ from console_encoding import configure_utf8_stdio  # noqa: E402
+ from register_template import (  # noqa: E402
+@@ -45,6 +46,10 @@
+     _validate_spec_shape,
+     validate_qualified_spec_identity,
+ )
++from svg_to_pptx.pptx_package.brand_theme import (  # noqa: E402
++    BRAND_THEME_FILENAME,
++    load_brand_theme,
++)
+ 
+ configure_utf8_stdio()
+ 
+@@ -55,6 +60,7 @@
+ STRUCTURAL_KINDS = ("layout", "deck")
+ ASSET_DIRS = ("images", "icons")
+ INSTALL_RECEIPT_NAME = "template_install.json"
++BRAND_METADATA = (BRAND_THEME_FILENAME, BRAND_ASSETS_FILENAME)
+ BITMAP_SUFFIXES = {
+     ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp",
+ }
+@@ -215,6 +221,19 @@
+         specs=specs,
+         in_place=in_place,
+     )
++    for path in templates_dir.iterdir():
++        if path.name.casefold() == BRAND_ASSETS_FILENAME:
++            if path.name != BRAND_ASSETS_FILENAME or "brand" not in record.kinds:
++                raise ApplyTemplateError(f"{path}: {BRAND_ASSETS_FILENAME} is reserved for the selected Brand")
++            load_brand_assets(root)
++        if path.name.casefold() != BRAND_THEME_FILENAME:
++            continue
++        if path.name != BRAND_THEME_FILENAME or "brand" not in record.kinds:
++            raise ApplyTemplateError(
++                f"{path}: templates/{BRAND_THEME_FILENAME} is reserved for "
++                "the selected Brand and must use this exact filename"
++            )
++        load_brand_theme(root)
+     if record.source == "library" and specs[0].kind == "style":
+         for extra in (*ASSET_DIRS, "exports"):
+             if (root / extra).exists():
+@@ -306,6 +325,7 @@
+         path
+         for path in _iter_files(record.templates_dir)
+         if not _is_spec_file(path) and path.suffix.lower() not in BITMAP_SUFFIXES
++        and path not in {record.templates_dir / name for name in BRAND_METADATA}
+     ]
+ 
+ 
+@@ -317,6 +337,8 @@
+         owner_kind = "deck" if owner else None
+     plan = InstallPlan(project=project, roots=roots, owner=owner, owner_kind=owner_kind)
+     project_templates = project / "templates"
++    brand_record = next((r for r in roots if "brand" in r.kinds), None)
++    brand_assets = load_brand_assets(brand_record.root) if brand_record else None
+ 
+     for record in roots:
+         if record.in_place:
+@@ -329,6 +351,10 @@
+                     content=_spec_with_provenance(spec.path, record),
+                 )
+             )
++        for name in BRAND_METADATA:
++            metadata = record.templates_dir / name
++            if "brand" in record.kinds and metadata.is_file():
++                plan.mappings.append(Mapping(src=metadata, dst=project_templates / name))
+         for asset_dir in ASSET_DIRS:
+             source_dir = record.root / asset_dir
+             if not source_dir.is_dir():
+@@ -347,6 +373,25 @@
+         )
+         if owner_kind == "layout" and in_place_deck is not None:
+             plan.removals.extend(_structural_files(in_place_deck))
++    if brand_assets is not None and owner is not None:
++        targets = [m for m in plan.mappings if m.src.suffix.lower() == ".svg"
++                   and m.src.is_relative_to(owner.templates_dir)]
++        if owner.in_place:
++            targets = [Mapping(src=p, dst=p) for p in _structural_files(owner)
++                       if p.suffix.lower() == ".svg"]
++        source_owned = (
++            any(str(spec.frontmatter.get("replication_mode", "")).lower() == "mirror"
++                for spec in owner.specs)
++            or (owner.templates_dir / "source_themes.json").is_file()
++            or (owner.templates_dir / "template_execution_manifest.json").is_file()
++        )
++        for mapping in targets:
++            content = bind_brand_assets(mapping.src, mapping.dst, project, brand_assets, allow_binding=not source_owned)
++            original = mapping.src.read_bytes()
++            if owner.in_place and content != original:
++                raise ApplyTemplateError("Cannot safely rebind an in-place template; install the neutral source Layout into a fresh project")
++            if not owner.in_place and content != original:
++                mapping.content = content
+     return plan
+ 
+ 
+@@ -428,6 +473,10 @@
+     paths = {f"templates/{name}" for name in specs}
+     for root in snapshots:
+         paths.update(name for name in root["files"] if name.startswith(("images/", "icons/")))
++        for name in BRAND_METADATA:
++            metadata = f"templates/{name}"
++            if "brand" in root["kinds"] and metadata in root["files"]:
++                paths.add(metadata)
+     owner = next((root for root in snapshots if "layout" in root["kinds"]), None)
+     owner_kind = "layout"
+     if owner is None:
+@@ -440,6 +489,7 @@
+             if name.startswith("templates/")
+             and not _is_spec_file(Path(name))
+             and Path(name).suffix.lower() not in BITMAP_SUFFIXES
++            and name not in {f"templates/{metadata}" for metadata in BRAND_METADATA}
+         )
+         paths.update(structural)
+         roster = {"workspace_root": owner["workspace_root"], "kind": owner_kind, "files": structural}
+@@ -481,6 +531,10 @@
+         path.relative_to(content_root).as_posix()
+         for path in _iter_files(content_root / "templates")
+         if not _is_spec_file(path) and path.suffix.lower() not in BITMAP_SUFFIXES
++        and not (
++            path in {content_root / "templates" / name for name in BRAND_METADATA}
++            and path.relative_to(content_root).as_posix() in expected_paths
++        )
+     }
+     if actual_specs != specs or actual_roster != set(roster["files"] if roster else []):
+         raise ApplyTemplateError("Installed template specs or active roster differ from the selection")
+--- /dev/null
++++ b/scripts/brand_assets.py
+@@ -0,0 +1,101 @@
++"""Validate portable Brand assets and bind authored SVG role declarations."""
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++import re
++from dataclasses import dataclass
++from pathlib import Path, PurePosixPath
++from xml.etree import ElementTree as ET
++
++BRAND_ASSETS_FILENAME = "brand_assets.json"
++_ROLE = re.compile(r"[a-zA-Z][a-zA-Z0-9_.-]{0,63}")
++
++
++@dataclass(frozen=True)
++class BrandAssets:
++    assets: dict[str, str]
++    colors: dict[str, str]
++
++
++def _unique_members(pairs: list[tuple[str, object]]) -> dict:
++    result = {}
++    for key, value in pairs:
++        if key in result:
++            raise ValueError(f"Duplicate Brand manifest member {key!r}")
++        result[key] = value
++    return result
++
++
++def load_brand_assets(workspace: Path) -> BrandAssets | None:
++    manifest = workspace / "templates" / BRAND_ASSETS_FILENAME
++    if not manifest.exists():
++        return None
++    root = workspace.resolve()
++    if not manifest.resolve().is_relative_to(root):
++        raise ValueError("Brand asset manifest escapes its workspace")
++    data = json.loads(manifest.read_text(encoding="utf-8"), object_pairs_hook=_unique_members)
++    if (not isinstance(data, dict)
++            or data.get("schema") != "ppt-master.brand-assets.v1"
++            or set(data) - {"schema", "assets", "colors"}
++            or not isinstance(data.get("assets"), dict)
++            or not isinstance(data.get("colors", {}), dict)):
++        raise ValueError("Invalid ppt-master.brand-assets.v1 manifest")
++    assets = {}
++    for role, value in data["assets"].items():
++        if not _ROLE.fullmatch(role) or not isinstance(value, dict) or set(value) != {"path", "sha256"}:
++            raise ValueError(f"Invalid Brand asset role {role!r}")
++        raw, digest = value["path"], value["sha256"]
++        if not isinstance(raw, str) or not isinstance(digest, str):
++            raise ValueError(f"Invalid Brand asset path/hash for {role!r}")
++        path = PurePosixPath(raw)
++        if (path.is_absolute() or len(path.parts) < 2 or path.parts[0] != "images"
++                or ".." in path.parts or "\\" in raw or ":" in raw or raw != path.as_posix()):
++            raise ValueError(f"Brand asset {role!r} must use a portable images/ path")
++        source = (root / raw).resolve()
++        if not source.is_relative_to(root) or not source.is_file():
++            raise ValueError(f"Brand asset {role!r} is missing or escapes its workspace")
++        if not re.fullmatch(r"[0-9a-f]{64}", digest) or hashlib.sha256(source.read_bytes()).hexdigest() != digest:
++            raise ValueError(f"Brand asset {role!r} sha256 mismatch")
++        assets[role] = raw
++    colors = data.get("colors", {})
++    for role, value in colors.items():
++        if not _ROLE.fullmatch(role) or not isinstance(value, str) or not re.fullmatch(r"#[0-9a-fA-F]{6}", value):
++            raise ValueError(f"Invalid Brand color role {role!r}")
++    return BrandAssets(assets, colors)
++
++
++def bind_brand_assets(
++    source: Path, destination: Path, project: Path, brand: BrandAssets, *, allow_binding: bool = True,
++) -> bytes:
++    original = source.read_bytes()
++    root = ET.fromstring(original)
++    if not allow_binding and any(node.get(attr) is not None for node in root.iter()
++                                 for attr in ("data-pptx-brand-asset", "data-pptx-brand-fill")):
++        raise ValueError("Brand asset binding requires authored templates; mirror sources cannot be rebound")
++    changed = False
++    for node in root.iter():
++        role = node.get("data-pptx-brand-asset")
++        if role is not None:
++            if role not in brand.assets:
++                raise ValueError(f"{source.name}: Brand asset role {role!r} is missing")
++            if node.tag.rsplit("}", 1)[-1] != "image":
++                raise ValueError(f"{source.name}: Brand asset role {role!r} requires an image slot")
++            href = Path(os.path.relpath(project / brand.assets[role], destination.parent)).as_posix()
++            node.set("href", href)
++            node.attrib.pop("{http://www.w3.org/1999/xlink}href", None)
++            changed = True
++        role = node.get("data-pptx-brand-fill")
++        if role is not None:
++            if role not in brand.colors:
++                raise ValueError(f"{source.name}: Brand color role {role!r} is missing")
++            if "fill" in {p.split(":", 1)[0].strip() for p in node.get("style", "").split(";")}:
++                raise ValueError(f"{source.name}: Brand fill slot must use a fill attribute, not inline style")
++            node.set("fill", brand.colors[role])
++            changed = True
++    if not changed:
++        return original
++    ET.register_namespace("", "http://www.w3.org/2000/svg")
++    ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
++    return ET.tostring(root, encoding="utf-8") + b"\n"
+--- /dev/null
++++ b/scripts/docs/native-master-defaults.md
+@@ -0,0 +1,85 @@
++# Native Master defaults
++
++An authored structured workspace can provide `templates/master_defaults.json` to create editable Master placeholders and sparse Layout/Slide defaults. The builder consumes the profile during package assembly. The same builder serves template preview and project export. A workspace without the file uses the existing export path. Mirror, source-preserve, flat, and round-trip exports do not accept this profile.
++
++The profile must declare every Master, Layout, and slot in the active roster, including retained Layout prototypes. Unknown schema keys, missing slots, unsupported property names, escaping snippet paths, and unsupported XML fail export. The existing template installer carries the JSON and XML snippets with the structure owner's snapshot.
++
++## Profile structure
++
++```json
++{
++  "schema": "ppt-master.master-defaults.v1",
++  "masters": {
++    "main": {
++      "placeholders": {
++        "title": "master-defaults/title.xml",
++        "body": "master-defaults/body.xml",
++        "date": "master-defaults/date.xml",
++        "footer": "master-defaults/footer.xml",
++        "slide-number": "master-defaults/slide-number.xml"
++      },
++      "text_styles": "master-defaults/text-styles.xml"
++    }
++  },
++  "policies": {
++    "ordinary-title": {
++      "geometry": "inherit",
++      "body_properties": "master-defaults/empty-body.xml",
++      "list_style": "master-defaults/empty-list.xml",
++      "slide_inherits": ["geometry", "body.insets", "body.anchor", "body.layout", "text.size", "text.faces", "text.bold", "text.italic", "text.color", "text.decoration", "text.tracking", "text.baseline", "paragraph.spacing", "paragraph.list", "paragraph.align"]
++    }
++  },
++  "layouts": {
++    "content": {
++      "master": "main",
++      "slots": {"title-slot": "ordinary-title"},
++      "optional_date_idx": 9,
++      "color_map": "master-defaults/dark-map.xml"
++    }
++  },
++  "preview_anchors": {
++    "title": {"layout": "content", "slot": "title-slot"},
++    "body": {"layout": "content", "slot": "body-slot"}
++  }
++}
++```
++
++The example abbreviates the slot roster. `preview_anchors` is optional and reads provisional pixel sizes from two SVG text carriers. It affects template preview only. Project export uses its supplied `MasterTextStyleSpec`. Optional `preview_colors` supplies the four provisional `dk1`, `dk2`, `lt1`, and `lt2` RGB slots to template preview only. Ordinary project export never consumes this preview palette.
++
++Each Master snippet has a `p:sp` root and the corresponding native `p:ph` type: `title`, `body`, `dt`, `ftr`, or `sldNum`. Shape IDs are assigned by the builder. The `p:txStyles` snippet must include title level 1 and body/other levels 1–9. Text size parameters are `sz="${title_hpt}"` and `sz="${body_hpt}"`. They resolve to hundredths of a point from the current project. Bind each body level to the same body parameter to preserve size while levels change indentation and bullets.
++
++Snippets are relationship-free XML fragments inside `templates/`. They cannot contain media, links, themes, extension payloads, external entities, or arbitrary OOXML. Font faces use `+mj-*` / `+mn-*`; colors use theme roles or neutral black, white, and gray. Brand resources own the full theme and concrete fonts. Optional `color_bindings` maps each named parameter to a project color role and a neutral grayscale fallback. For example, `"footer_light": {"role": "footer_light", "fallback": "666666"}` permits `<a:srgbClr val="${color.footer_light}"/>`. The builder resolves these from the original `ThemeColorSpec.roles` before binding the Brand theme, so colors outside the twelve theme slots remain available. The neutral Layout contains no brand RGB. Only named color parameters on `a:srgbClr@val` accept this substitution. A Layout can supply a `p:clrMapOvr` snippet to choose how that theme's roles map on dark or light backgrounds.
++
++Master and Layout entries can optionally name a `background` XML snippet. Its `p:bg` contains either a solid `p:bgPr` using `bg1`/`bg2`, or `p:bgRef` with index 1001–1003 and one untransformed `bg1`/`bg2` color. The SVG must still declare the corresponding background as its visual fallback. The materializer preserves the native theme alias and background-style reference, and validates the resulting package against that snippet.
++
++A policy's `geometry` controls Layout ownership. `inherit` omits Layout `a:xfrm`; `svg-bounds` writes the declared slot bounds. `body_properties` and `list_style` are sparse `a:bodyPr` and `a:lstStyle` fragments. Empty fragments inherit. The builder does not fill them with Office defaults or infer them from the first content run.
++
++`slide_inherits` controls each property's removal from Slide-local output. Supported groups are shown above. Individual run names are `size`, `bold`, `italic`, `color`, `latin`, `ea`, `cs`, `underline`, `strike`, `tracking`, and `baseline`. Individual paragraph names are `line-spacing`, `space-before`, `space-after`, `bullet`, `indent`, and `align`. Property equality never establishes ownership.
++
++Native chart/table content remains owned by those objects. Their graphic-frame geometry is mandatory OOXML and must remain local. Give such slots an empty `slide_inherits`. Picture slots can inherit geometry; the builder retains the converter's contained image area by adjusting `a:fillRect` before removing the Slide frame.
++
++## Content and local overrides
++
++Every text carrier under this profile declares `data-pptx-native-defaults="true"`. Carrier appearance remains a full SVG preview fallback. A carrier can declare `data-pptx-local="size,color"` to retain specific local overrides. Nested `tspan`/link style declarations also establish local ownership, including a declaration equal to the inherited value. Explicit normal/none/zero values emit actual reset attributes.
++
++When a primary language is supplied, the same shared language binder updates both compiled default snippets and the exported package. Validation still checks every expected attribute; it does not discard language differences.
++
++The converter retains this ownership through run coalescing. It emits temporary `data-pptx-local` attributes on `a:rPr` and `a:pPr`; the builder consumes and removes them before package validation. Missing provenance on a managed text run is an error. It never clears an entire `rPr`, text body, hyperlink, language, or field identity to create inheritance.
++
++Use `data-pptx-level="0"` through `"8"` on semantic paragraph tspans. Preserve existing `data-paragraph-space-before` / `data-paragraph-space-after` intent, including zero. Pixel paragraph spacing converts to points. `data-pptx-bullet="none"` or a single character and `data-pptx-indent` / `data-pptx-margin-left` provide explicit paragraph overrides. A slot-level `data-pptx-local="geometry"` preserves a Slide-local frame. Default profile text flow is `preserve`, so semantic paragraphs stay in one native carrier.
++
++A Layout footer uses the prototype's actual footer text as its new-slide default. An empty footer stays empty. Title and body placeholders keep editing prompts rather than inheriting prototype content.
++
++`optional_date_idx` adds a native date placeholder to the Layout but no Slide object. It must not collide with a declared slot. The Layout keeps `p:hf@dt=0`. An optional `optional_date_policy` names the sparse body/text policy for this native-only slot, for example a dark-background field color; its geometry must inherit. A real declared date slot, such as cover content, remains present. Slide-number slots always contain `a:fld type="slidenum"`, including neutral preview. Optional date capability uses `datetime1`.
++
++## Verification
++
++Package validation retains the existing part/relationship, content-type, name, slot, background, and ID checks. Profile slots additionally check effective Master→Layout→Slide bounds, declared sparse Layout defaults, missing local geometry where inheritance is required, absence of undeclared local run defaults, automatic page-number fields, and removal of converter metadata. The template checker loads the same profile before export.
++
++From the oracle-template-installer skill directory, run its distributed verifier:
++
++```sh
++python3 -B scripts/verify_runtime.py qualify --work /absolute/new-check --report /absolute/report.json
++```
++
++XML and python-pptx tests prove package structure and supported effective-value resolution. PowerPoint's new-slide, Master-edit, date enablement, reset/layout switching, and save/reopen behavior still require native application verification.
+--- a/scripts/docs/template-tools.md
++++ b/scripts/docs/template-tools.md
+@@ -151,3 +151,52 @@
+ ```
+ 
+ Derives the index entry from `templates/design_spec.md` (frontmatter preferred; prose fallback) plus the actual `templates/*.svg` roster and updates `templates/brands/brands_index.json`, `styles/styles_index.json`, `layouts/layouts_index.json`, or `decks/decks_index.json`. The JSON index is the single discovery source for Default Stage-1 template controls and chat listing; READMEs describe kinds in prose and are never edited. `--dry-run` checks the directory/index identity without writing.
++
++
++## Explicit native Master defaults
++
++Authored structured workspaces may provide `templates/master_defaults.json` for five native Master roles, sparse per-property inheritance, and optional date capability. See [Native Master defaults](native-master-defaults.md) for the profile and SVG metadata contract. Workspaces without this profile keep the existing behavior.
++
++
++## Portable Brand assets and image backgrounds
++
++A selected Brand may provide `templates/brand_assets.json`:
++
++```json
++{
++  "schema": "ppt-master.brand-assets.v1",
++  "assets": {
++    "cover-background": {"path": "images/cover.jpg", "sha256": "<64 lowercase hex characters>"},
++    "wordmark-on-dark": {"path": "images/wordmark.svg", "sha256": "<64 lowercase hex characters>"}
++  },
++  "colors": {"cover-accent": "#F0CC72"}
++}
++```
++
++`assets` maps semantic roles to workspace-relative local files and their SHA-256
++hashes. `colors` is optional. Paths must stay under `images/` within the Brand
++workspace, including after resolving symlinks. URLs and escaping paths fail.
++
++An authored Layout declares `data-pptx-brand-asset="cover-background"` on an
++ordinary image with a neutral `href`, or `data-pptx-brand-fill="cover-accent"`
++on an element with a `fill` attribute. The installer binds the selected Brand
++into copied SVG bytes, retaining IDs, geometry, and role declarations. It writes
++image references relative to each installed SVG. The manifest and image files
++enter the installation receipt as Brand metadata/assets; they do not become
++Layout roster entries. Source SVG hashes remain separate from installed hashes.
++No manifest leaves the neutral SVG unchanged. A present manifest with a missing
++requested role fails. Repeat installation from unchanged roots is idempotent.
++In-place templates may be reused only when binding would not change their bytes;
++otherwise install the neutral source Layout into a fresh project.
++
++For a native Master/Layout image background, declare a direct `<image>` with
++`data-pptx-background="image"`, `data-pptx-layer="master"` or `"layout"`,
++`preserveAspectRatio="none"`, and exact full-canvas bounds. This contract supports
++uncropped stretch without transforms, filters, opacity, clipping, or hidden
++paint. The exporter moves the compiled picture fill and media relationships to
++`p:cSld/p:bg/p:bgPr/a:blipFill` and removes the duplicate picture. Ordinary
++full-canvas images remain pictures. An explicit image background conflicts with
++a `master_defaults.json` background snippet for the same scope. Authored Brand
++binding and image-background markers are unsupported in source-preserve, mirror,
++and roundtrip exports; an unused installed manifest alone does not trigger that
++restriction.
+--- a/scripts/svg_finalize/flatten_tspan.py
++++ b/scripts/svg_finalize/flatten_tspan.py
+@@ -184,6 +184,10 @@
+     baseline_attr = "data-pptx-text-baseline"
+     if baseline_attr not in exclude and src_el.get(baseline_attr) is not None:
+         dst_el.set(baseline_attr, src_el.get(baseline_attr))
++    if src_el.get('data-pptx-native-defaults') == 'true':
++        for key, value in src_el.attrib.items():
++            if key not in exclude and (key.startswith('data-pptx-') or key.startswith('data-paragraph-')):
++                dst_el.set(key, value)
+     # xml:space preservation
+     xml_space = src_el.get("{http://www.w3.org/XML/1998/namespace}space")
+     if xml_space is not None and "{http://www.w3.org/XML/1998/namespace}space" not in exclude:
+@@ -367,6 +371,21 @@
+       - Adjacent lines with different effective font sizes start new paragraphs.
+     """
+     base_x = parse_first_number(get_attr(text_el, "x"))
++    native_line_height = (
++        parse_first_number(text_el.get(PARAGRAPH_MARK_ATTR))
++        if text_el.get('data-pptx-native-defaults') == 'true'
++        else None
++    )
++    native_paragraphs = text_el.get('data-pptx-native-defaults') == 'true' and (
++        (native_line_height is not None and native_line_height > 0)
++        or text_el.get('data-pptx-text-model') == 'paragraphs'
++        or any(
++            child.get(key) is not None
++            for child in text_el
++            for key in (PARAGRAPH_LINE_BREAK_ATTR, PARAGRAPH_SOFT_BREAK_ATTR,
++                        PARAGRAPH_SPACE_BEFORE_ATTR, 'data-pptx-level', 'data-paragraph-level')
++        )
++    )
+     child_view = _build_paragraph_child_view(text_el, is_svg_tag)
+     if child_view is None:
+         return None
+@@ -386,6 +405,10 @@
+ 
+     if len(line_groups) < 2:
+         return None
++    if native_paragraphs:
++        first_x = parse_first_number(line_groups[0][0].get('x'))
++        if first_x is not None:
++            base_x = first_x
+ 
+     # Tail text after a direct-child tspan is a run of the parent <text>. It
+     # survives when the line is wrapped into a container with its sibling
+@@ -418,7 +441,7 @@
+         t_dy = parse_first_number(t_dy_raw) if t_dy_raw is not None else None
+ 
+         if idx == 0:
+-            if t_dy is not None and abs(t_dy) > 1e-6:
++            if t_dy is not None and abs(t_dy) > 1e-6 and not native_paragraphs:
+                 return None
+             dy_values.append(0.0)
+         else:
+@@ -431,7 +454,7 @@
+     positive_dys = [d for d in dy_values[1:] if d > 0]
+     if not positive_dys:
+         return None
+-    base = min(positive_dys)
++    base = native_line_height if native_line_height is not None and native_line_height > 0 else min(positive_dys)
+     font_size = _get_font_size_px(text_el)
+     if font_size is not None and base > font_size * MAX_DY_MULTIPLIER + DY_TOLERANCE_PX:
+         return None
+@@ -509,6 +532,13 @@
+       - PARAGRAPH_SPACE_BEFORE_ATTR on tspans that open a new paragraph
+         with an extra gap (omitted when 0)
+     """
++    if text_el.get('data-pptx-native-defaults') == 'true':
++        first_x = line_groups[0][0].get('x')
++        if first_x is not None:
++            text_el.set('x', first_x)
++        first_dy = parse_first_number(line_groups[0][0].get('dy')) or 0.0
++        if first_dy:
++            text_el.set('y', format_number((parse_first_number(text_el.get('y')) or 0.0) + first_dy))
+     text_el.set(PARAGRAPH_MARK_ATTR, format_number(base_dy))
+     if synthetic_first is not None:
+         text_el.text = None
+@@ -543,6 +573,18 @@
+     extras_iter = iter(extras)
+     break_iter = iter(break_kinds)
+     for tspan in normalized_lines:
++        native_defaults = text_el.get('data-pptx-native-defaults') == 'true'
++        explicit_space_before = tspan.get(PARAGRAPH_SPACE_BEFORE_ATTR) if native_defaults else None
++        explicit_soft_break = native_defaults and tspan.get(PARAGRAPH_SOFT_BREAK_ATTR) == '1'
++        explicit_line_break = native_defaults and tspan.get(PARAGRAPH_LINE_BREAK_ATTR) == '1'
++        semantic_paragraph = native_defaults and any(
++            tspan.get(key) is not None for key in (
++                'data-pptx-level', 'data-paragraph-level',
++                'data-paragraph-space-before', 'data-paragraph-space-after',
++                'data-pptx-bullet', 'data-pptx-indent', 'data-pptx-margin-left',
++                'data-paragraph-align',
++            )
++        )
+         for k in ("x", "y", "dx", "dy"):
+             if k in tspan.attrib:
+                 del tspan.attrib[k]
+@@ -558,12 +600,20 @@
+         except StopIteration:
+             extra = 0.0
+             break_kind = "paragraph"
++        if explicit_soft_break:
++            break_kind = 'soft'
++        elif explicit_line_break:
++            break_kind = 'line'
++        elif semantic_paragraph:
++            break_kind = "paragraph"
+         if break_kind == "soft":
+             tspan.set(PARAGRAPH_SOFT_BREAK_ATTR, "1")
+         elif break_kind == "line":
+             tspan.set(PARAGRAPH_LINE_BREAK_ATTR, "1")
+         elif extra > 1e-6:
+             tspan.set(PARAGRAPH_SPACE_BEFORE_ATTR, format_number(extra))
++        if explicit_space_before is not None:
++            tspan.set(PARAGRAPH_SPACE_BEFORE_ATTR, explicit_space_before)
+ 
+ 
+ def flatten_text_with_tspans(
+@@ -808,6 +858,7 @@
+     # so its parent typography and xml:space semantics remain intact.
+     if (
+         not lead_text
++        and text_el.get('data-pptx-native-defaults') != 'true'
+         and len(tspans) == 1
+         and _is_svg_tag(tspans[0], "tspan")
+         and not any(key in tspans[0].attrib for key in TEXT_IDENTITY_ATTRS)
+--- a/scripts/svg_quality/checker.py
++++ b/scripts/svg_quality/checker.py
+@@ -7679,6 +7679,14 @@
+         if self.template_mode:
+             try:
+                 specs = _parse_template_structure_slides(svg_files)
++                from svg_to_pptx.pptx_package.master_defaults import load_master_defaults, preview_anchor_sizes
++                from svg_to_pptx.drawingml.theme_fonts import infer_master_text_style_spec, MasterTextStyleSpec
++                styles, _, _ = infer_master_text_style_spec(svg_files)
++                defaults_root = target_path.parent if target_path.name == "templates" else project_path
++                anchors = preview_anchor_sizes(defaults_root, svg_files)
++                if anchors:
++                    styles = MasterTextStyleSpec(round(anchors[0] * 75), round(anchors[1] * 75))
++                load_master_defaults(defaults_root, specs, styles)
+             except _TemplateStructureError as exc:
+                 self._pptx_structure_issues.append(('error', str(exc)))
+                 return
+--- a/scripts/svg_to_pptx/drawingml/elements.py
++++ b/scripts/svg_to_pptx/drawingml/elements.py
+@@ -2613,15 +2613,55 @@
+     bullet: dict[str, Any] | None = None,
+     ctx: ConvertContext | None = None,
+     rtl: bool = False,
++    native_properties: dict[str, Any] | None = None,
+ ) -> str:
++    native = native_properties or {}
++    if 'data-paragraph-align' in native:
++        raw_align = native['data-paragraph-align']
++        alignments = {'left': 'l', 'center': 'ctr', 'right': 'r', 'justify': 'just',
++                      'l': 'l', 'ctr': 'ctr', 'r': 'r', 'just': 'just'}
++        if raw_align not in alignments:
++            raise ValueError('data-paragraph-align must be left, center, right, or justify')
++        algn = alignments[raw_align]
+     attrs = f'algn="{algn}"'
+     if rtl:
+         attrs += ' rtl="1"'
++    bullet_mode = native.get('data-pptx-bullet')
++    if bullet_mode is not None:
++        if bullet_mode == 'none':
++            bullet = None
++        elif len(bullet_mode) == 1:
++            bullet = {**(bullet or {}), 'char': bullet_mode}
++        else:
++            raise ValueError('data-pptx-bullet must be none or a single character')
+     if bullet:
+         margin = px_to_emu(_bullet_margin_px(bullet, font_size))
+         indent = px_to_emu(_bullet_indent_px(bullet, font_size))
+-        attrs += f' marL="{margin}" indent="{indent}"'
+-    return f'<a:pPr {attrs}>{body_xml}{_build_bullet_xml(bullet, ctx)}</a:pPr>'
++    else:
++        margin = indent = None
++    for attr, target in (('data-pptx-margin-left', 'margin'), ('data-pptx-indent', 'indent')):
++        if attr not in native:
++            continue
++        value = float(native[attr])
++        if not math.isfinite(value):
++            raise ValueError(f'{attr} must be a finite pixel value')
++        if target == 'margin':
++            margin = px_to_emu(value)
++        else:
++            indent = px_to_emu(value)
++    if margin is not None:
++        attrs += f' marL="{margin}"'
++    if indent is not None:
++        attrs += f' indent="{indent}"'
++    if native_properties is not None:
++        local = set(native.get('local', ()))
++        if bullet:
++            local.update({'bullet', 'indent'})
++        attrs += f' data-pptx-local="{",".join(sorted(local))}"'
++        if 'level' in native:
++            attrs += f' lvl="{native["level"]}"'
++    bullet_xml = '<a:buNone/>' if bullet_mode == 'none' else _build_bullet_xml(bullet, ctx)
++    return f'<a:pPr {attrs}>{body_xml}{bullet_xml}</a:pPr>'
+ 
+ 
+ def _estimate_bullet_line_width(
+@@ -2661,6 +2701,75 @@
+     return parse_project_opacity(value)
+ 
+ 
++_NATIVE_RUN_PROPERTIES = frozenset({
++    'size', 'bold', 'italic', 'underline', 'strike', 'tracking', 'baseline',
++    'color', 'latin', 'ea', 'cs',
++})
++_NATIVE_PARAGRAPH_PROPERTIES = frozenset({
++    'line-spacing', 'space-before', 'space-after', 'bullet', 'indent', 'align',
++})
++_NATIVE_RUN_DECLARATIONS = {
++    'font-size': {'size'}, 'font-weight': {'bold'}, 'font-style': {'italic'},
++    'text-decoration': {'underline', 'strike'}, 'letter-spacing': {'tracking'},
++    'baseline-shift': {'baseline'}, 'fill': {'color'},
++    'fill-opacity': {'color'}, 'opacity': {'color'},
++    'font-family': {'latin', 'ea', 'cs'},
++}
++_NATIVE_PARAGRAPH_DECLARATIONS = {
++    'data-paragraph-line-height': 'line-spacing',
++    'data-paragraph-space-before': 'space-before',
++    'data-paragraph-space-after': 'space-after',
++    'data-pptx-bullet': 'bullet', 'data-pptx-indent': 'indent',
++    'data-pptx-margin-left': 'indent', 'data-paragraph-align': 'align',
++}
++
++
++def _native_local_properties(elem: ET.Element) -> frozenset[str]:
++    return frozenset(filter(None, re.split(r'[\s,]+', elem.get('data-pptx-local', ''))))
++
++
++def _native_paragraph_properties(
++    elem: ET.Element,
++    inherited: dict[str, Any] | None = None,
++) -> dict[str, Any]:
++    properties = dict(inherited or {})
++    local = set(properties.get('local', ()))
++    local.update(_native_local_properties(elem) & _NATIVE_PARAGRAPH_PROPERTIES)
++    for attr, group in _NATIVE_PARAGRAPH_DECLARATIONS.items():
++        raw = elem.get(attr)
++        if raw is not None:
++            properties[attr] = raw
++            if inherited is not None:
++                local.add(group)
++    levels = [elem.get(name) for name in ('data-pptx-level', 'data-paragraph-level')]
++    levels = [value for value in levels if value is not None]
++    if levels:
++        if len(set(levels)) != 1 or not re.fullmatch(r'[0-8]', levels[0]):
++            raise ValueError('native paragraph level must be an integer from 0 to 8')
++        properties['level'] = int(levels[0])
++    properties['local'] = frozenset(local)
++    return properties
++
++
++def _native_paragraph_spacing(properties: dict[str, Any], fallback: str = '') -> str:
++    spacing = []
++    for attr, tag in (
++        ('data-paragraph-line-height', 'lnSpc'),
++        ('data-paragraph-space-before', 'spcBef'),
++        ('data-paragraph-space-after', 'spcAft'),
++    ):
++        raw = properties.get(attr)
++        if raw is None:
++            if tag == 'lnSpc':
++                spacing.append(fallback)
++            continue
++        value = float(raw)
++        if not math.isfinite(value) or value < 0:
++            raise ValueError(f'{attr} must be a nonnegative pixel value')
++        spacing.append(f'<a:{tag}><a:spcPts val="{round(value * FONT_PX_TO_HUNDREDTHS_PT)}"/></a:{tag}>')
++    return ''.join(spacing)
++
++
+ def _override_run_attrs(
+     parent_attrs: dict[str, Any],
+     tspan: ET.Element,
+@@ -2672,6 +2781,14 @@
+ 
+     def tspan_attr(name: str) -> str | None:
+         return inline_style.get(name) or tspan.get(name)
++
++    if '_native_local' in parent_attrs:
++        local = set(parent_attrs['_native_local'])
++        local.update(_native_local_properties(tspan) & _NATIVE_RUN_PROPERTIES)
++        for attr, groups in _NATIVE_RUN_DECLARATIONS.items():
++            if tspan_attr(attr) is not None:
++                local.update(groups)
++        run_attrs['_native_local'] = frozenset(local)
+ 
+     object_opacity = float(run_attrs.get('_object_opacity', 1.0))
+     fill_opacity = float(run_attrs.get('_fill_opacity', 1.0))
+@@ -2698,10 +2815,10 @@
+         run_attrs['font_weight'] = parse_project_font_weight(
+             tspan_attr('font-weight')
+         ).canonical
+-    raw_baseline_shift = tspan.get('baseline-shift')
++    raw_baseline_shift = tspan_attr('baseline-shift')
+     if raw_baseline_shift is not None:
+         run_attrs['baseline_shift'] = int(
+-            parse_project_baseline_shift(raw_baseline_shift).value
++            parse_project_baseline_shift(raw_baseline_shift, allow_reset='_native_local' in run_attrs).value
+         )
+     if tspan_attr('fill'):
+         child_fill = tspan_attr('fill')
+@@ -2874,6 +2991,8 @@
+     fill_raw: str,
+     opacity: float | None,
+     ctx: ConvertContext | None,
++    *,
++    literal_color: bool = False,
+ ) -> str:
+     """Build DrawingML fill XML for a text run."""
+     if fill_raw.strip().lower() in ('none', 'transparent'):
+@@ -2887,7 +3006,7 @@
+             return build_gradient_fill(
+                 paint,
+                 opacity,
+-                ctx.theme_color_spec,
++                None if literal_color else ctx.theme_color_spec,
+                 "text",
+             )
+         if paint_tag == 'pattern':
+@@ -2916,7 +3035,7 @@
+     alpha_xml = ''
+     if opacity is not None:
+         alpha_xml = f'<a:alphaMod val="{quantize_ooxml_alpha(opacity)}"/>'
+-    theme_spec = ctx.theme_color_spec if ctx is not None else None
++    theme_spec = ctx.theme_color_spec if ctx is not None and not literal_color else None
+     return (
+         '<a:solidFill>'
+         f'{color_node_xml(fill, theme_spec, "text", alpha_xml)}'
+@@ -2990,6 +3109,22 @@
+     strike_attr = ' strike="sngStrike"' if strike else ''
+     spc_attr = _letter_spacing_to_drawingml_spc(letter_spacing_px)
+     baseline_attr = f' baseline="{baseline_shift}"' if baseline_shift else ''
++    local = run.get('_native_local')
++    local_attr = ''
++    if local is not None:
++        local_attr = f' data-pptx-local="{",".join(sorted(local))}"'
++        if 'bold' in local and not b_attr:
++            b_attr = ' b="0"'
++        if 'italic' in local and not i_attr:
++            i_attr = ' i="0"'
++        if 'underline' in local and not u_attr:
++            u_attr = ' u="none"'
++        if 'strike' in local and not strike_attr:
++            strike_attr = ' strike="noStrike"'
++        if 'tracking' in local and not spc_attr:
++            spc_attr = ' spc="0"'
++        if 'baseline' in local and not baseline_attr:
++            baseline_attr = ' baseline="0"'
+ 
+     fonts = (
+         parse_font_family(ff, ctx.primary_language if ctx is not None else None)
+@@ -3007,6 +3142,12 @@
+             ctx.theme_font_spec if ctx is not None else None,
+         ) or resolve_text_run_fonts(text, fonts)
+     )
++    if local is not None and fixed_font_family is None:
++        literal_fonts = resolve_text_run_fonts(text, fonts)
++        run_fonts = {
++            script: literal_fonts[script] if script in local else face
++            for script, face in run_fonts.items()
++        }
+     lang = str(run.get('_language_override') or detect_text_lang(
+         text,
+         ctx.primary_language if ctx is not None else None,
+@@ -3017,7 +3158,7 @@
+         else ''
+     )
+ 
+-    fill_xml = _build_text_fill_xml(fill, fill_raw, opacity, ctx)
++    fill_xml = _build_text_fill_xml(fill, fill_raw, opacity, ctx, literal_color=local is not None and 'color' in local)
+     outline_xml = _build_text_outline_xml(run, ctx)
+     relationship_id = run.get(HYPERLINK_RID_KEY)
+     hyperlink_xml = (
+@@ -3031,7 +3172,7 @@
+         else ''
+     )
+ 
+-    return f'''<a:rPr lang="{lang}" sz="{sz}"{b_attr}{i_attr}{u_attr}{strike_attr}{spc_attr}{baseline_attr} dirty="0">
++    return f'''<a:rPr lang="{lang}" sz="{sz}"{b_attr}{i_attr}{u_attr}{strike_attr}{spc_attr}{baseline_attr} dirty="0"{local_attr}>
+ {outline_xml}
+ {fill_xml}
+ {effect_xml}
+@@ -3250,6 +3391,13 @@
+         'stroke_width': stroke_width,
+         'stroke_opacity': stroke_opacity,
+     }
++    native_defaults = elem.get('data-pptx-native-defaults') == 'true'
++    native_paragraph = _native_paragraph_properties(elem) if native_defaults else None
++    if native_defaults:
++        parent_attrs['_native_local'] = _native_local_properties(elem) & _NATIVE_RUN_PROPERTIES
++        raw_baseline_shift = _get_attr(elem, 'baseline-shift', ctx)
++        if raw_baseline_shift is not None:
++            parent_attrs['baseline_shift'] = int(parse_project_baseline_shift(raw_baseline_shift, allow_reset=True).value)
+ 
+     # Single-frame modes annotate conservative dy-stacked text with one base
+     # line height. Semantic paragraphs become <a:p>; authored visual rows
+@@ -3263,6 +3411,7 @@
+     paragraph_runs: list[list[dict[str, Any]]] | None = None
+     paragraph_space_before: list[float] = []
+     paragraph_bullets: list[dict[str, Any] | None] = []
++    native_paragraphs: list[dict[str, Any]] = []
+     # Per-tspan widths (visual lines as the deck author drew them) regardless
+     # of how many merge into one <a:p>; used to size the textbox so PowerPoint
+     # has room to wrap text to the SVG's original line widths.
+@@ -3321,6 +3470,8 @@
+                 paragraph_runs.append(line_runs)
+                 sb_attr = child.get('data-paragraph-space-before')
+                 paragraph_space_before.append(_f(sb_attr) if sb_attr else 0.0)
++                if native_defaults:
++                    native_paragraphs.append(_native_paragraph_properties(child, native_paragraph))
+         if not paragraph_runs:
+             paragraph_runs = None
+             paragraph_space_before = []
+@@ -3631,7 +3782,7 @@
+             line_spc_val = round(line_height_px * FONT_PX_TO_HUNDREDTHS_PT)
+             ln_spc_xml = f'<a:lnSpc><a:spcPts val="{line_spc_val}"/></a:lnSpc>'
+             paragraph_xml_chunks = []
+-            for line, extra_px, bullet in zip(paragraph_runs, paragraph_space_before, paragraph_bullets):
++            for paragraph_index, (line, extra_px, bullet) in enumerate(zip(paragraph_runs, paragraph_space_before, paragraph_bullets)):
+                 spc_bef_xml = ''
+                 if extra_px > 0:
+                     spc_bef_val = round(extra_px * FONT_PX_TO_HUNDREDTHS_PT)
+@@ -3646,6 +3797,10 @@
+                     if any(run.get(_INLINE_FORMULA_KEY) is not None for run in line)
+                     else ln_spc_xml
+                 )
++                properties = native_paragraphs[paragraph_index] if native_defaults else None
++                body_xml = f'{effective_line_spacing}{spc_bef_xml}'
++                if properties is not None:
++                    body_xml = _native_paragraph_spacing(properties, effective_line_spacing)
+                 p_pr_xml = _paragraph_pr_xml(
+                     algn=algn,
+                     font_size=(
+@@ -3653,13 +3808,14 @@
+                         if first_text_run is not None
+                         else font_size
+                     ),
+-                    body_xml=f'{effective_line_spacing}{spc_bef_xml}',
++                    body_xml=body_xml,
+                     bullet=bullet,
+                     ctx=ctx,
+                     rtl=text_uses_rtl(
+                         ''.join(str(run.get('text', '')) for run in line),
+                         ctx.primary_language,
+                     ),
++                    native_properties=properties,
+                 )
+                 paragraph_xml_chunks.append(
+                     f'<a:p>\n{p_pr_xml}\n{runs_inner}\n</a:p>'
+@@ -3673,6 +3829,8 @@
+             bullet=single_bullet,
+             ctx=ctx,
+             rtl=text_uses_rtl(full_text, ctx.primary_language),
++            body_xml=_native_paragraph_spacing(native_paragraph) if native_paragraph is not None else '',
++            native_properties=native_paragraph,
+         )
+         return f'<a:p>\n{p_pr_xml}\n{runs_xml}\n</a:p>'
+ 
+--- a/scripts/svg_to_pptx/drawingml/text_properties.py
++++ b/scripts/svg_to_pptx/drawingml/text_properties.py
+@@ -316,12 +316,14 @@
+     )
+ 
+ 
+-def parse_project_baseline_shift(raw: str) -> ParsedTextProperty:
++def parse_project_baseline_shift(raw: str, *, allow_reset: bool = False) -> ParsedTextProperty:
+     """Map the closed superscript/subscript grammar to DrawingML baseline."""
+     values = {
+         'super': 30_000,
+         'sub': -25_000,
+     }
++    if allow_reset and raw in {'0', 'baseline'}:
++        return ParsedTextProperty(0, '0')
+     if raw not in values:
+         raise ValueError("expected exactly 'super' or 'sub'")
+     return ParsedTextProperty(values[raw], raw)
+@@ -619,6 +621,7 @@
+     name: str,
+     raw: str,
+     font_size: float,
++    native_defaults: bool = False,
+ ) -> tuple[bool, TextPropertyDiagnostic | None]:
+     """Return whether a declaration belongs to the text contract and its issue."""
+     label = _element_label(elem)
+@@ -643,13 +646,13 @@
+                 f'{label} must declare baseline-shift as a direct attribute; '
+                 'inline style is not supported',
+             )
+-        if tag != 'tspan':
++        if tag != 'tspan' and not (native_defaults and tag == 'text'):
+             return True, TextPropertyDiagnostic(
+                 'error', label, source, name, raw,
+                 f'{label} can use baseline-shift only on <tspan>',
+             )
+         try:
+-            parse_project_baseline_shift(raw)
++            parse_project_baseline_shift(raw, allow_reset=native_defaults)
+         except ValueError as exc:
+             return True, TextPropertyDiagnostic(
+                 'error', label, source, name, raw,
+@@ -711,6 +714,13 @@
+ ) -> list[TextPropertyDiagnostic]:
+     """Validate the closed text attribute/value surface for one SVG tree."""
+     font_sizes, diagnostics = _resolve_font_sizes(root)
++    native_text_nodes = {
++        id(descendant)
++        for carrier in root.iter()
++        if _local_name(carrier.tag) == 'text'
++        and carrier.get('data-pptx-native-defaults') == 'true'
++        for descendant in carrier.iter()
++    }
+ 
+     for elem in root.iter():
+         tag = _local_name(elem.tag)
+@@ -735,6 +745,7 @@
+                 name=name,
+                 raw=raw,
+                 font_size=font_sizes[id(elem)],
++                native_defaults=id(elem) in native_text_nodes,
+             )
+             if diagnostic is not None:
+                 diagnostics.append(diagnostic)
+@@ -770,6 +781,7 @@
+                 name=name,
+                 raw=raw,
+                 font_size=font_sizes[id(elem)],
++                native_defaults=id(elem) in native_text_nodes,
+             )
+             if diagnostic is not None:
+                 diagnostics.append(diagnostic)
+--- /dev/null
++++ b/scripts/svg_to_pptx/pptx_package/brand_theme.py
+@@ -0,0 +1,179 @@
++"""Portable, relationship-free Brand themes for newly generated PPTX packages.
++
++The optional ``templates/brand_theme.xml`` is a complete DrawingML Theme.
++It owns color slots, fonts, format styles, object defaults and custom colors;
++it owns no Master, Layout, placeholder geometry or slide content. Callers must
++not apply it to round-trip or source-preserving mirror exports.
++"""
++
++from __future__ import annotations
++
++import re
++from dataclasses import dataclass
++from pathlib import Path
++from xml.etree import ElementTree as ET
++
++from ..drawingml.theme_colors import ThemeColorSpec
++
++
++BRAND_THEME_FILENAME = "brand_theme.xml"
++DML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
++THEME_FAMILY_NS = "http://schemas.microsoft.com/office/thememl/2012/main"
++_COLOR_SLOTS = (
++    "dk1", "lt1", "dk2", "lt2", "accent1", "accent2", "accent3",
++    "accent4", "accent5", "accent6", "hlink", "folHlink",
++)
++_THEME_CHILDREN = (
++    "themeElements", "objectDefaults", "extraClrSchemeLst", "custClrLst", "extLst",
++)
++_HEX_COLOR = re.compile(r"[0-9A-Fa-f]{6}\Z")
++
++
++class BrandThemeError(ValueError):
++    """An optional Brand theme violates the portable Theme contract."""
++
++
++@dataclass(frozen=True)
++class BrandTheme:
++    """Validated Theme bytes plus the concrete, ordered color-slot mapping."""
++
++    payload: bytes
++    name: str
++    scheme_colors: tuple[tuple[str, str], ...]
++
++
++def _tag(name: str) -> str:
++    return f"{{{DML_NS}}}{name}"
++
++
++def _parse_brand_theme(payload: bytes, source: Path) -> BrandTheme:
++    try:
++        text = payload.decode("utf-8-sig")
++        if re.search(r"<!\s*(?:DOCTYPE|ENTITY)\b", text, re.IGNORECASE):
++            raise BrandThemeError(f"{source}: Theme cannot declare a DTD or entity")
++        root = ET.fromstring(text)
++    except (UnicodeDecodeError, ET.ParseError) as exc:
++        raise BrandThemeError(f"{source}: invalid UTF-8 Theme XML: {exc}") from exc
++    if root.tag != _tag("theme"):
++        raise BrandThemeError(f"{source}: root must be DrawingML a:theme")
++    for node in root.iter():
++        namespace, _, local = (
++            node.tag[1:].partition("}")
++            if node.tag.startswith("{") else ("", "", node.tag)
++        )
++        if namespace not in {DML_NS, THEME_FAMILY_NS}:
++            raise BrandThemeError(f"{source}: unsupported Theme namespace {namespace!r}")
++        if namespace == THEME_FAMILY_NS and local != "themeFamily":
++            raise BrandThemeError(f"{source}: unsupported Theme extension {local!r}")
++        for attribute in node.attrib:
++            if attribute.startswith("{") or attribute.lower() in {"href", "src", "embed", "link"}:
++                raise BrandThemeError(f"{source}: Theme must not contain relationship or external-reference attributes")
++    children = [node.tag for node in root]
++    expected = [_tag(name) for name in _THEME_CHILDREN if _tag(name) in children]
++    if not children or children[0] != _tag("themeElements") or children != expected:
++        raise BrandThemeError(f"{source}: invalid or duplicate Theme top-level elements")
++    elements = root.find(_tag("themeElements"))
++    assert elements is not None
++    if [node.tag for node in elements] != [_tag(name) for name in ("clrScheme", "fontScheme", "fmtScheme")]:
++        raise BrandThemeError(f"{source}: themeElements must contain clrScheme, fontScheme and fmtScheme in order")
++    colors = elements.find(_tag("clrScheme"))
++    assert colors is not None
++    if [node.tag for node in colors] != [_tag(name) for name in _COLOR_SLOTS]:
++        raise BrandThemeError(f"{source}: clrScheme must declare all 12 color slots in DrawingML order")
++    palette = []
++    for slot, node in zip(_COLOR_SLOTS, colors):
++        if len(node) != 1 or node[0].tag not in {_tag("srgbClr"), _tag("sysClr")}:
++            raise BrandThemeError(f"{source}: {slot} requires one srgbClr or sysClr with a concrete fallback")
++        color = node[0].get("lastClr" if node[0].tag == _tag("sysClr") else "val", "")
++        if not _HEX_COLOR.fullmatch(color) or len(node[0]):
++            raise BrandThemeError(f"{source}: {slot} requires an untransformed six-digit RGB value")
++        palette.append((slot, color.upper()))
++    fonts = elements.find(_tag("fontScheme"))
++    assert fonts is not None
++    if [node.tag for node in fonts] != [_tag("majorFont"), _tag("minorFont")]:
++        raise BrandThemeError(f"{source}: fontScheme requires majorFont and minorFont")
++    for font in fonts:
++        if [node.tag for node in font][:3] != [_tag(name) for name in ("latin", "ea", "cs")]:
++            raise BrandThemeError(f"{source}: font collection requires latin, ea and cs faces")
++    styles = elements.find(_tag("fmtScheme"))
++    assert styles is not None
++    if [node.tag for node in styles] != [_tag(name) for name in ("fillStyleLst", "lnStyleLst", "effectStyleLst", "bgFillStyleLst")]:
++        raise BrandThemeError(f"{source}: fmtScheme requires all four style lists")
++    if any(len(style_list) < 3 for style_list in styles):
++        raise BrandThemeError(f"{source}: each fmtScheme style list requires at least three entries")
++    return BrandTheme(payload, root.get("name", ""), tuple(palette))
++
++
++def load_brand_theme(resource_root: Path | None) -> BrandTheme | None:
++    """Read only this workspace's optional profile; reject path escapes."""
++    if resource_root is None:
++        return None
++    workspace = resource_root.resolve()
++    source = workspace / "templates" / BRAND_THEME_FILENAME
++    if not source.exists() and not source.is_symlink():
++        return None
++    if not source.resolve().is_relative_to(workspace) or not source.is_file():
++        raise BrandThemeError(f"Brand theme must be a file within its workspace: {source}")
++    return _parse_brand_theme(source.read_bytes(), source)
++
++
++def bind_brand_theme_colors(
++    profile: BrandTheme, spec: ThemeColorSpec | None,
++) -> ThemeColorSpec:
++    """Bind existing color roles to the profile before SVG color tokenization.
++
++    A role without an exact RGB match remains literal in the generated page.
++    For duplicate theme colors, retain the role's previous slot when possible,
++    then prefer the first slot in profile order. Never allocate a new slot or
++    reinterpret an existing slot merely to accommodate a project color.
++    """
++    slots = dict(profile.scheme_colors)
++    roles: dict[str, str] = {}
++    role_slots: dict[str, str] = {}
++    if spec is not None:
++        for role, color in spec.roles.items():
++            if role not in spec.role_slots:
++                continue
++            matches = [slot for slot, value in profile.scheme_colors if value == color]
++            if not matches:
++                continue
++            roles[role] = color
++            previous = spec.role_slots[role]
++            role_slots[role] = previous if previous in matches else matches[0]
++    return ThemeColorSpec(
++        slots=slots,
++        roles=roles,
++        role_slots=role_slots,
++        extra_roles=tuple(role for role in spec.extra_roles if role in roles) if spec else (),
++    )
++
++
++def apply_brand_theme(extract_dir: Path, profile: BrandTheme) -> int:
++    """Replace generated Theme parts, preserving names and package relationships.
++
++    Validate every target before writing. Theme parts with their own nonempty
++    relationship files are source-bearing packages and are refused. The caller
++    owns export-mode gating and applies this after any generated Theme defaults.
++    """
++    package = extract_dir.resolve()
++    targets = sorted(
++        path for path in (package / "ppt" / "theme").glob("theme*.xml")
++        if re.fullmatch(r"theme[0-9]+\.xml", path.name)
++    )
++    if not targets:
++        raise BrandThemeError("Generated PPTX package has no Theme parts")
++    for target in targets:
++        if not target.resolve().is_relative_to(package):
++            raise BrandThemeError(f"Theme target escapes the generated package: {target}")
++        try:
++            if ET.parse(target).getroot().tag != _tag("theme"):
++                raise BrandThemeError(f"Generated Theme target is not a:theme: {target}")
++            rels = target.parent / "_rels" / f"{target.name}.rels"
++            if rels.exists():
++                if not rels.resolve().is_relative_to(package) or len(ET.parse(rels).getroot()):
++                    raise BrandThemeError(f"Cannot replace a Theme with package relationships: {target}")
++        except ET.ParseError as exc:
++            raise BrandThemeError(f"Cannot read generated Theme target {target}: {exc}") from exc
++    for target in targets:
++        target.write_bytes(profile.payload)
++    return len(targets)
+--- a/scripts/svg_to_pptx/pptx_package/builder.py
++++ b/scripts/svg_to_pptx/pptx_package/builder.py
+@@ -104,6 +104,9 @@
+     chrome_token_from_markers,
+     page_layout_name_from_svg,
+ )
++from .master_defaults import load_master_defaults, MasterDefaults
++from .template_language import bind_template_text_language
++from .brand_theme import load_brand_theme, bind_brand_theme_colors, apply_brand_theme
+ from .dimensions import (
+     CANVAS_FORMATS,
+     resolve_svg_canvas,
+@@ -3553,7 +3556,7 @@
+         return _move_template_background(states, target_path, public_slide_count)
+ 
+     resolved_shapes = [shape for shape in shapes if shape is not None]
+-    if item.is_background:
++    if item.is_background and item.tag != "image":
+         background_xml = _move_template_solid_background_shapes(
+             states,
+             resolved_shapes,
+@@ -3603,11 +3606,35 @@
+         prototype_state.rels,
+         target_rels_path,
+     )
+-    _set_shape_name(target_shape, f"{item.element_id} {item.layer.title()}")
+-    _append_shape_to_part(target_path, target_shape)
++    background_xml = None
++    if item.is_background:
++        fill = target_shape.find(f"{{{PML_NS}}}blipFill")
++        xfrm = target_shape.find(f"{{{PML_NS}}}spPr/{{{DML_NS}}}xfrm")
++        if (target_shape.tag != f"{{{PML_NS}}}pic" or fill is None
++                or xfrm is None or xfrm.attrib
++                or _shape_bounds_emu(target_shape, None) != (0, 0, *slide_size_emu)
++                or fill.find(f"{{{DML_NS}}}stretch/{{{DML_NS}}}fillRect") is None
++                or fill.find(f"{{{DML_NS}}}tile") is not None):
++            raise TemplateStructureError(f"{item.element_id}: image background must compile to one uncropped full-slide picture")
++        crop = fill.find(f"{{{DML_NS}}}srcRect")
++        if crop is not None and any(value != "0" for value in crop.attrib.values()):
++            raise TemplateStructureError(f"{item.element_id}: image background cannot be cropped")
++        background = ET.Element(f"{{{PML_NS}}}bg")
++        properties = ET.SubElement(background, f"{{{PML_NS}}}bgPr")
++        fill.tag = f"{{{DML_NS}}}blipFill"
++        properties.append(fill)
++        ET.SubElement(properties, f"{{{DML_NS}}}effectLst")
++        background_xml = ET.tostring(background, encoding="unicode")
++        updated = _put_background_on_part(target_path.read_text(encoding="utf-8"), background_xml)
++        if updated is None:
++            raise TemplateStructureError(f"Cannot install image background on {target_path.name}")
++        target_path.write_text(updated, encoding="utf-8")
++    else:
++        _set_shape_name(target_shape, f"{item.element_id} {item.layer.title()}")
++        _append_shape_to_part(target_path, target_shape)
+     for state, shape in zip(states, resolved_shapes):
+         _remove_template_shape(state, shape)
+-    return None
++    return background_xml
+ 
+ 
+ def _shape_bounds_emu(
+@@ -3666,9 +3693,17 @@
+     source_bounds: tuple[int, int, int, int],
+     target_bounds: tuple[int, int, int, int],
+ ) -> str:
+-    """Preserve an intentionally centered carrier inside its full slot frame."""
++    """Preserve the carrier's vertical intent inside its full slot frame."""
+     _, source_y, _, source_height = source_bounds
+     _, target_y, _, target_height = target_bounds
++    top_gap = source_y - target_y
++    bottom_gap = target_y + target_height - source_y - source_height
++    if (
++        top_gap > 0
++        and abs(bottom_gap) <= target_height * 0.2
++        and bottom_gap < top_gap / 2
++    ):
++        return "b"
+     source_center = source_y + source_height / 2
+     target_center = target_y + target_height / 2
+     return (
+@@ -3682,10 +3717,21 @@
+     body_pr: ET.Element,
+     source_bounds: tuple[int, int, int, int],
+     target_bounds: tuple[int, int, int, int],
++    item: TemplateElementSpec,
+ ) -> None:
+     """Make a full-frame placeholder wrap text while preserving vertical intent."""
+     body_pr.set("wrap", "square")
+-    body_pr.set("anchor", _placeholder_vertical_anchor(source_bounds, target_bounds))
++    if item.placeholder_vertical_align is not None:
++        anchor = {"top": "t", "center": "ctr", "bottom": "b"}[
++            item.placeholder_vertical_align
++        ]
++    elif item.placeholder == "body" or (
++        item.placeholder == "object" and item.placeholder_carrier_tag == "text"
++    ):
++        anchor = "t"
++    else:
++        anchor = _placeholder_vertical_anchor(source_bounds, target_bounds)
++    body_pr.set("anchor", anchor)
+     body_pr.set("anchorCtr", "0")
+     autofit_tags = {
+         f"{{{DML_NS}}}noAutofit",
+@@ -3709,6 +3755,27 @@
+         )
+     source_bounds = _shape_bounds_emu(shape, None)
+     target_bounds = _shape_bounds_emu(shape, item.placeholder_bounds)
++    if shape.tag == f"{{{PML_NS}}}pic" and source_bounds != target_bounds:
++        fill_rect = shape.find(
++            f"{{{PML_NS}}}blipFill/{{{DML_NS}}}stretch/{{{DML_NS}}}fillRect"
++        )
++        if fill_rect is not None:
++            source_x, source_y, source_width, source_height = source_bounds
++            target_x, target_y, target_width, target_height = target_bounds
++            # Keep the converter's fitted image area when the slot frame grows.
++            for edge, offset, source_size, target_size in (
++                ("l", source_x - target_x, source_width, target_width),
++                ("t", source_y - target_y, source_height, target_height),
++                ("r", target_x + target_width - source_x - source_width,
++                 source_width, target_width),
++                ("b", target_y + target_height - source_y - source_height,
++                 source_height, target_height),
++            ):
++                existing_inset = int(fill_rect.get(edge, "0"))
++                fill_rect.set(
++                    edge,
++                    str(round((offset * 100000 + existing_inset * source_size) / target_size)),
++                )
+     if shape.tag in {f"{{{PML_NS}}}sp", f"{{{PML_NS}}}pic"}:
+         sp_pr = shape.find(f"{{{PML_NS}}}spPr")
+         if sp_pr is None:
+@@ -3748,6 +3815,7 @@
+         body_pr,
+         source_bounds,
+         target_bounds,
++        item,
+     )
+ 
+ 
+@@ -3873,6 +3941,7 @@
+         body_pr,
+         source_bounds,
+         target_bounds,
++        item,
+     )
+     tx_body.append(body_pr)
+     list_style = (
+@@ -3881,10 +3950,11 @@
+         else ET.Element(f"{{{DML_NS}}}lstStyle")
+     )
+     _set_layout_level_one_default_size(list_style, source_run_pr)
+-    if item.placeholder in {"body", "subtitle"}:
++    if item.placeholder in {"body", "subtitle"} or (
++        item.placeholder == "object" and item.placeholder_carrier_tag == "text"
++    ):
+         _set_no_bullet_paragraph_properties(
+             _layout_level_one_paragraph_properties(list_style),
+-            replace_existing=item.placeholder == "body",
+         )
+     tx_body.append(list_style)
+ 
+@@ -3899,7 +3969,9 @@
+         if source_paragraph_props is not None
+         else None
+     )
+-    if item.placeholder in {"body", "subtitle"}:
++    if item.placeholder in {"body", "subtitle"} or (
++        item.placeholder == "object" and item.placeholder_carrier_tag == "text"
++    ):
+         if paragraph_props is None:
+             paragraph_props = ET.Element(f"{{{DML_NS}}}pPr")
+         _set_no_bullet_paragraph_properties(paragraph_props)
+@@ -3946,8 +4018,10 @@
+     shape: ET.Element,
+     item: TemplateElementSpec,
+ ) -> None:
+-    """Keep prose bullet-free while preserving explicit subtitle bullets."""
+-    if item.placeholder not in {"body", "subtitle"}:
++    """Keep prose bullet-free while preserving explicitly authored lists."""
++    if item.placeholder not in {"body", "subtitle"} and not (
++        item.placeholder == "object" and item.placeholder_carrier_tag == "text"
++    ):
+         return
+     tx_body = shape.find(f"{{{PML_NS}}}txBody")
+     if tx_body is None:
+@@ -3959,7 +4033,6 @@
+             paragraph.insert(0, paragraph_props)
+         _set_no_bullet_paragraph_properties(
+             paragraph_props,
+-            replace_existing=item.placeholder == "body",
+         )
+ 
+ 
+@@ -3982,6 +4055,8 @@
+     for props_tag in ("rPr", "defRPr", "endParaRPr"):
+         for props in shape.iter(f"{{{DML_NS}}}{props_tag}"):
+             for font_tag, suffix in (("latin", "lt"), ("ea", "ea"), ("cs", "cs")):
++                if font_tag in props.get("data-pptx-local", "").split(","):
++                    continue
+                 font = props.find(f"{{{DML_NS}}}{font_tag}")
+                 if font is not None:
+                     face = font.get("typeface")
+@@ -4027,7 +4102,7 @@
+ 
+     source_sp_pr = (
+         source_shape.find(f"{{{PML_NS}}}spPr")
+-        if source_shape.tag == f"{{{PML_NS}}}sp"
++        if source_shape.tag in {f"{{{PML_NS}}}sp", f"{{{PML_NS}}}pic"}
+         else None
+     )
+     if source_sp_pr is not None:
+@@ -4110,6 +4185,7 @@
+     placeholder_idx: int | None,
+     placeholder_type: str | None = None,
+     theme_font_spec: ThemeFontSpec | None = None,
++    preserve_defaults: bool = False,
+ ) -> None:
+     resolved_type = placeholder_type or TEMPLATE_PLACEHOLDER_TYPES.get(
+         item.placeholder or ""
+@@ -4137,7 +4213,8 @@
+         raise TemplateStructureError(
+             f"Placeholder {item.element_id!r} has no non-visual properties"
+         )
+-    _set_placeholder_no_inherited_bullets(shape, item)
++    if not preserve_defaults:
++        _set_placeholder_no_inherited_bullets(shape, item)
+     _set_placeholder_theme_font_role(shape, item, theme_font_spec)
+     for existing in list(nv_pr):
+         if existing.tag == f"{{{PML_NS}}}ph":
+@@ -4198,6 +4275,7 @@
+     theme_font_spec: ThemeFontSpec | None,
+     *,
+     use_layout_placeholder_frames: bool = False,
++    master_defaults: MasterDefaults | None = None,
+     public_slide_count: int | None = None,
+     verbose: bool = False,
+ ) -> tuple[
+@@ -4243,6 +4321,13 @@
+             if background_xml is not None:
+                 expected_backgrounds[master_part] = background_xml
+             master_shape_count += 1
++        if master_defaults is not None:
++            tree = ET.parse(master_path)
++            master_defaults.install_master(master_states[0].spec.master_key, tree.getroot())
++            background = master_defaults.background("master", master_states[0].spec.master_key)
++            if background is not None:
++                expected_backgrounds[master_part] = ET.tostring(background, encoding="unicode")
++            _write_xml_tree(master_path, tree)
+ 
+     specs_by_layout: dict[str, list[TemplateSlideSpec]] = {}
+     for spec in specs:
+@@ -4326,6 +4411,8 @@
+                 assigned_idx,
+                 theme_font_spec,
+             )
++            if master_defaults is not None:
++                master_defaults.layout_shape(prototype, item, layout_placeholder, prototype_shape)
+             _append_shape_to_part(layout_path, layout_placeholder)
+             for state, shape in zip(layout_states, resolved_shapes):
+                 if not proxy_binding:
+@@ -4334,8 +4421,13 @@
+                         item,
+                         assigned_idx,
+                         theme_font_spec=theme_font_spec,
++                        preserve_defaults=master_defaults is not None,
+                     )
+-                    if use_layout_placeholder_frames:
++                    if master_defaults is not None:
++                        if shape.tag == f"{{{PML_NS}}}pic" and master_defaults.inherits_geometry(state.spec, item):
++                            _apply_layout_frame_to_placeholder_carrier(shape, item)
++                        master_defaults.slide_shape(state.spec, item, shape)
++                    if use_layout_placeholder_frames and master_defaults is None:
+                         _apply_layout_frame_to_placeholder_carrier(shape, item)
+                     _set_shape_name(
+                         shape,
+@@ -4353,6 +4445,13 @@
+             placeholder_count += 1
+ 
+         _set_template_layout_header_footer(layout_path, prototype.placeholders)
++        if master_defaults is not None:
++            tree = ET.parse(layout_path)
++            master_defaults.finish_layout(layout_key, tree.getroot())
++            background = master_defaults.background("layout", layout_key)
++            if background is not None:
++                expected_backgrounds[layout_part] = ET.tostring(background, encoding="unicode")
++            _write_xml_tree(layout_path, tree)
+         for state in layout_states:
+             _set_slide_layout_target(state.rels_path, layout_target)
+ 
+@@ -6302,7 +6401,6 @@
+     layout placeholders, so proofing follows the deck rather than en-US; a
+     right-to-left deck also gets right-to-left, right-aligned default levels.
+     """
+-    rtl = language_uses_rtl(language)
+     ppt_dir = extract_dir / "ppt"
+     parts = [ppt_dir / "presentation.xml"]
+     parts += sorted((ppt_dir / "slideMasters").glob("slideMaster*.xml"))
+@@ -6312,40 +6410,8 @@
+             continue
+         xml = part.read_text(encoding="utf-8")
+         root = ET.fromstring(xml)
+-        language_updates = {
+-            props: language
+-            for tag in ("defRPr", "endParaRPr")
+-            for props in root.iter(f"{{{DML_NS}}}{tag}")
+-        }
+-        for tag in ("r", "fld"):
+-            for run in root.iter(f"{{{DML_NS}}}{tag}"):
+-                text = run.find(f"{{{DML_NS}}}t")
+-                if text is None or not (text.text or "").strip():
+-                    continue
+-                props = run.find(f"{{{DML_NS}}}rPr")
+-                if props is None:
+-                    props = ET.Element(f"{{{DML_NS}}}rPr")
+-                    run.insert(0, props)
+-                language_updates[props] = detect_text_lang(text.text, language)
+-        for shape in root.iter(f"{{{PML_NS}}}sp"):
+-            placeholder = shape.find(
+-                f"{{{PML_NS}}}nvSpPr/{{{PML_NS}}}nvPr/{{{PML_NS}}}ph"
+-            )
+-            if placeholder is not None and not any(
+-                (text.text or "").strip() for text in shape.iter(f"{{{DML_NS}}}t")
+-            ):
+-                for props in shape.iter(f"{{{DML_NS}}}rPr"):
+-                    language_updates[props] = language
+-        changed = False
+-        for props, text_language in language_updates.items():
+-            if props.get("lang") != text_language:
+-                props.set("lang", text_language)
+-                changed = True
+-        updated = serialize_source_xml(root, xml).decode("utf-8") if changed else xml
+-        if rtl:
+-            updated = _rtl_text_levels(updated)
+-        if updated != xml:
+-            part.write_text(updated, encoding="utf-8")
++        if bind_template_text_language(root, language):
++            part.write_bytes(serialize_source_xml(root, xml))
+ 
+ 
+ def _presentation_format(width: float, height: float) -> str:
+@@ -6902,6 +6968,8 @@
+         raise ThemeColorError(
+             "Per-Master source Themes are allowed only in structured export"
+         )
++    if text_flow is None and (Path(resource_root) / "templates" / "master_defaults.json").is_file():
++        text_flow = "preserve"
+     text_flow = resolve_text_flow(text_flow, merge_paragraphs)
+     if primary_language is not None:
+         primary_language = office_language_tag(primary_language)
+@@ -7081,6 +7149,23 @@
+     else:
+         template_specs = None
+         public_template_specs = None
++    if pptx_structure == "preserve" or roundtrip_export or source_theme_xml is not None or source_theme_xml_by_master is not None:
++        for path in svg_files:
++            if any(any(node.get(attr) is not None for attr in (
++                "data-pptx-background", "data-pptx-brand-asset", "data-pptx-brand-fill"
++            )) for node in ET.parse(path).getroot().iter()):
++                raise TemplateStructureError("Authored Brand/background markers are unsupported in source-preserve/mirror/roundtrip export")
++    master_defaults = None
++    defaults_path = Path(resource_root) / "templates" / "master_defaults.json"
++    if defaults_path.exists():
++        if pptx_structure != "structured" or source_theme_xml is not None or source_theme_xml_by_master is not None or roundtrip_export:
++            raise TemplateStructureError("master_defaults.json requires authored structured export; source-preserve/mirror/roundtrip cannot consume it")
++        master_defaults = load_master_defaults(resource_root, template_specs, master_text_style_spec, theme_color_spec, primary_language)
++    brand_theme = None
++    if pptx_structure in {"baseline", "flat", "structured"} and not roundtrip_export and source_theme_xml is None and source_theme_xml_by_master is None:
++        brand_theme = load_brand_theme(resource_root)
++        if brand_theme is not None:
++            theme_color_spec = bind_brand_theme_colors(brand_theme, theme_color_spec)
+     template_background_expectations: dict[str, str | None] | None = None
+     template_shape_roster_expectations: (
+         dict[str, tuple[str, ...]] | None
+@@ -7304,6 +7389,8 @@
+                     f"{len(source_embedded_fonts.parts)} part(s) for "
+                     + ", ".join(installed_typefaces)
+                 )
++        if brand_theme is not None:
++            apply_brand_theme(extract_dir, brand_theme)
+         structure = _read_slide_layout_targets(extract_dir, len(svg_files))
+ 
+         media_dir = extract_dir / 'ppt' / 'media'
+@@ -8357,6 +8444,7 @@
+                 conversion_trace if conversion_trace is not None else structure_trace,
+                 active_theme_font_spec,
+                 use_layout_placeholder_frames=use_layout_placeholder_frames,
++                master_defaults=master_defaults,
+                 public_slide_count=public_slide_count,
+                 verbose=verbose,
+             )
+@@ -8366,11 +8454,13 @@
+                     template_master_parts_by_key,
+                     source_theme_xml_by_master,
+                 )
+-            master_count = apply_master_text_style_spec(
++            master_count = 0 if master_defaults is not None else apply_master_text_style_spec(
+                 extract_dir,
+                 master_text_style_spec,
+             )
+-            if verbose:
++            if verbose and master_defaults is not None:
++                print("  Native Master defaults: five roles; title " + str(master_text_style_spec.title_hpt / 100) + "pt; body levels 1–9 " + str(master_text_style_spec.body_hpt / 100) + "pt")
++            if verbose and master_defaults is None:
+                 print(
+                     "  Structured master text styles: "
+                     f"{master_count} master(s), "
+@@ -8649,6 +8739,7 @@
+                     expected_master_parts=template_master_parts_by_key,
+                     expected_backgrounds=template_background_expectations,
+                     expected_shape_rosters=template_shape_roster_expectations,
++                    master_defaults=master_defaults,
+                 )
+             except ValueError as exc:
+                 raise TemplateStructureError(
+--- /dev/null
++++ b/scripts/svg_to_pptx/pptx_package/master_defaults.py
+@@ -0,0 +1,1005 @@
++"""Explicit, portable native Master defaults for authored structured decks.
++
++Only declared ownership removes a local property. Visual equality never implies
++inheritance. XML snippets own native defaults; SVG remains the content carrier.
++"""
++
++from __future__ import annotations
++
++import copy
++import json
++import re
++import uuid
++from dataclasses import dataclass, field
++from pathlib import Path
++from xml.etree import ElementTree as ET
++
++from ..drawingml.theme_colors import ThemeColorSpec
++from .template_language import bind_template_text_language
++from .template_structure import TemplateStructureError
++
++A = "http://schemas.openxmlformats.org/drawingml/2006/main"
++P = "http://schemas.openxmlformats.org/presentationml/2006/main"
++NS = {"a": A, "p": P}
++ROLES = {
++    "title": "title",
++    "body": "body",
++    "date": "dt",
++    "footer": "ftr",
++    "slide-number": "sldNum",
++}
++RUN_ATTRIBUTES = {
++    "size": "sz",
++    "bold": "b",
++    "italic": "i",
++    "underline": "u",
++    "strike": "strike",
++    "tracking": "spc",
++    "baseline": "baseline",
++}
++RUN_CHILDREN = {
++    "color": ("solidFill", "gradFill", "noFill"),
++    "latin": ("latin",),
++    "ea": ("ea",),
++    "cs": ("cs",),
++}
++PAR_ATTRIBUTES = {"indent": ("marL", "marR", "indent"), "align": ("algn",)}
++PAR_CHILDREN = {
++    "line-spacing": ("lnSpc",),
++    "space-before": ("spcBef",),
++    "space-after": ("spcAft",),
++    "bullet": (
++        "buNone",
++        "buAutoNum",
++        "buChar",
++        "buFont",
++        "buClr",
++        "buClrTx",
++        "buSzPct",
++        "buSzPts",
++        "buSzTx",
++    ),
++}
++GROUPS = {
++    "text.size": ("size",),
++    "text.faces": ("latin", "ea", "cs"),
++    "text.bold": ("bold",),
++    "text.italic": ("italic",),
++    "text.color": ("color",),
++    "text.decoration": ("underline", "strike"),
++    "text.tracking": ("tracking",),
++    "text.baseline": ("baseline",),
++    "paragraph.spacing": ("line-spacing", "space-before", "space-after"),
++    "paragraph.list": ("bullet", "indent"),
++    "paragraph.align": ("align",),
++    "body.insets": ("lIns", "rIns", "tIns", "bIns"),
++    "body.anchor": ("anchor", "anchorCtr"),
++    "body.layout": ("wrap", "vert", "rtlCol", "autofit"),
++    "geometry": ("geometry",),
++}
++TOKENS = (
++    set(RUN_ATTRIBUTES)
++    | set(RUN_CHILDREN)
++    | set(PAR_ATTRIBUTES)
++    | set(PAR_CHILDREN)
++    | {
++        "geometry",
++        "lIns",
++        "rIns",
++        "tIns",
++        "bIns",
++        "anchor",
++        "anchorCtr",
++        "wrap",
++        "vert",
++        "rtlCol",
++        "autofit",
++    }
++)
++_ALLOWED = {
++    "sp",
++    "nvSpPr",
++    "cNvPr",
++    "cNvSpPr",
++    "nvPr",
++    "ph",
++    "spPr",
++    "txBody",
++    "bodyPr",
++    "lstStyle",
++    "p",
++    "pPr",
++    "r",
++    "rPr",
++    "t",
++    "fld",
++    "endParaRPr",
++    "txStyles",
++    "titleStyle",
++    "bodyStyle",
++    "otherStyle",
++    "defPPr",
++    "defRPr",
++    "xfrm",
++    "off",
++    "ext",
++    "prstGeom",
++    "avLst",
++    "noFill",
++    "solidFill",
++    "schemeClr",
++    "srgbClr",
++    "ln",
++    "noAutofit",
++    "normAutofit",
++    "spAutoFit",
++    "spLocks",
++    "lnSpc",
++    "spcBef",
++    "spcAft",
++    "spcPts",
++    "spcPct",
++    "buNone",
++    "buAutoNum",
++    "buChar",
++    "buFont",
++    "buClr",
++    "buClrTx",
++    "buSzPct",
++    "buSzPts",
++    "buSzTx",
++    "tabLst",
++    "tab",
++    "latin",
++    "ea",
++    "cs",
++    "clrMapOvr",
++    "overrideClrMapping",
++    "masterClrMapping",
++} | {f"lvl{i}pPr" for i in range(1, 10)}
++
++
++_PRESENTATION_ELEMENTS = {
++    "sp",
++    "nvSpPr",
++    "cNvPr",
++    "cNvSpPr",
++    "nvPr",
++    "ph",
++    "spPr",
++    "txBody",
++    "txStyles",
++    "titleStyle",
++    "bodyStyle",
++    "otherStyle",
++    "clrMapOvr",
++}
++
++
++_ALLOWED.update({"bg", "bgPr", "bgRef", "effectLst"})
++_PRESENTATION_ELEMENTS.update({"bg", "bgPr", "bgRef"})
++
++
++def clone(node):
++    return copy.deepcopy(node)
++
++
++def _append_before_extensions(parent, child):
++    position = next(
++        (
++            i
++            for i, existing in enumerate(parent)
++            if existing.tag.rsplit("}", 1)[-1] == "extLst"
++        ),
++        len(parent),
++    )
++    parent.insert(position, child)
++
++
++def _error(message):
++    raise TemplateStructureError("Master defaults: " + message)
++
++
++def _keys(value, required, optional=()):
++    if (
++        not isinstance(value, dict)
++        or set(value) - set(required) - set(optional)
++        or set(required) - set(value)
++    ):
++        _error(
++            f"expected keys {sorted(required)} (optional {sorted(optional)}), got {value!r}"
++        )
++
++
++def _neutral_rgb(value):
++    return (
++        bool(re.fullmatch(r"[0-9A-Fa-f]{6}", value))
++        and value[0:2].upper() == value[2:4].upper() == value[4:6].upper()
++    )
++
++
++def _xml(template_dir, relative, root_tag, bindings):
++    if not isinstance(relative, str):
++        _error("snippet path must be a string")
++    path = (template_dir / relative).resolve()
++    if not path.is_relative_to(template_dir.resolve()) or not path.is_file():
++        _error(f"snippet must exist within templates/: {relative!r}")
++    data = path.read_text(encoding="utf-8")
++    if "<!DOCTYPE" in data or "<!ENTITY" in data:
++        _error(f"entities are forbidden: {relative}")
++    try:
++        root = ET.fromstring(data)
++    except ET.ParseError as exc:
++        _error(f"invalid snippet {relative}: {exc}")
++    if root.tag != root_tag:
++        _error(f"{relative} has incorrect root {root.tag}")
++    for node in root.iter():
++        local = node.tag.rsplit("}", 1)[-1]
++        if (
++            local not in _ALLOWED
++            or node.tag
++            != "{" + (P if local in _PRESENTATION_ELEMENTS else A) + "}" + local
++        ):
++            _error(f"unsupported XML element {node.tag} in {relative}")
++        bound_color = False
++        for key, value in list(node.attrib.items()):
++            if key.startswith("{"):
++                _error(f"namespaced attributes/relationships forbidden in {relative}")
++            if "${" in value:
++                token = value.removeprefix("${").removesuffix("}")
++                is_size = key == "sz" and token in {"title_hpt", "body_hpt"}
++                is_color = (
++                    local == "srgbClr" and key == "val" and token.startswith("color.")
++                )
++                if (
++                    not (is_size or is_color)
++                    or token not in bindings
++                    or value != "${" + token + "}"
++                ):
++                    _error(f"unsupported parameter {value!r} in {relative}")
++                bound_color = is_color
++                node.set(key, str(bindings[token]))
++        if local in {"latin", "ea", "cs", "buFont"} and not re.fullmatch(
++            r"\+(?:mj|mn)-(?:lt|ea|cs)", node.get("typeface", "")
++        ):
++            _error(f"only theme font references are allowed: {relative}")
++        if (
++            local == "srgbClr"
++            and not bound_color
++            and not _neutral_rgb(node.get("val", ""))
++        ):
++            _error(
++                f"only neutral literal colors or scheme colors are allowed: {relative}"
++            )
++    return root
++
++
++def _read_background(directory, relative, bindings):
++    root = _xml(directory, relative, "{" + P + "}bg", bindings)
++    if root.attrib or len(root) != 1:
++        _error("background must contain exactly one bgPr or bgRef")
++    content = root[0]
++    if content.tag == "{" + P + "}bgRef":
++        if set(content.attrib) != {"idx"} or content.get("idx") not in {
++            "1001",
++            "1002",
++            "1003",
++        }:
++            _error(
++                "background reference must select background style 1001, 1002, or 1003"
++            )
++        colors = list(content)
++    elif content.tag == "{" + P + "}bgPr":
++        if content.attrib or [n.tag for n in content] not in (
++            ["{" + A + "}solidFill"],
++            ["{" + A + "}solidFill", "{" + A + "}effectLst"],
++        ):
++            _error(
++                "background properties support only a solid theme fill and optional empty effectLst"
++            )
++        if len(content) == 2 and (content[1].attrib or len(content[1])):
++            _error("background effectLst must be empty")
++        colors = list(content[0])
++    else:
++        _error("background must contain bgPr or bgRef")
++    if (
++        len(colors) != 1
++        or colors[0].tag != "{" + A + "}schemeClr"
++        or colors[0].attrib not in ({"val": "bg1"}, {"val": "bg2"})
++        or len(colors[0])
++    ):
++        _error("background must use one untransformed bg1 or bg2 theme alias")
++    return root
++
++
++def _set_background(root, background):
++    slide = root.find("p:cSld", NS)
++    previous = slide.find("p:bg", NS)
++    if previous is not None:
++        slide.remove(previous)
++    slide.insert(0, clone(background))
++
++
++@dataclass(frozen=True)
++class SlotDefaults:
++    geometry: str
++    body: ET.Element
++    style: ET.Element
++    inherits: frozenset[str]
++
++
++@dataclass(frozen=True)
++class MasterDefaults:
++    masters: dict
++    layouts: dict
++    slots: dict[tuple[str, str], SlotDefaults]
++    source: Path
++    master_backgrounds: dict[str, ET.Element] = field(default_factory=dict)
++
++    def slot(self, spec, item):
++        return self.slots[(spec.layout_key, item.element_id)]
++
++    def master_names(self, key):
++        return tuple("Native Master " + role for role in ROLES)
++
++    def optional_date_idx(self, key):
++        return self.layouts[key].get("optional_date_idx")
++
++    def background(self, kind, key):
++        return (
++            self.master_backgrounds.get(key)
++            if kind == "master"
++            else self.layouts[key].get("background_xml")
++        )
++
++    def install_master(self, key, root):
++        background = self.background("master", key)
++        if background is not None:
++            _set_background(root, background)
++        shapes, styles = self.masters[key]
++        tree = root.find("p:cSld/p:spTree", NS)
++        next_id = (
++            max(
++                (int(n.get("id", "1")) for n in root.iter("{" + P + "}cNvPr")),
++                default=1,
++            )
++            + 1
++        )
++        for role in ROLES:
++            shape = clone(shapes[role])
++            props = shape.find("p:nvSpPr/p:cNvPr", NS)
++            props.set("id", str(next_id))
++            next_id += 1
++            props.set("name", "Native Master " + role)
++            _append_before_extensions(tree, shape)
++        old = root.find("p:txStyles", NS)
++        if old is not None:
++            root.remove(old)
++        _append_before_extensions(root, clone(styles))
++
++    def layout_shape(self, spec, item, shape, source_shape):
++        policy = self.slot(spec, item)
++        sp = shape.find("p:spPr", NS)
++        if policy.geometry == "inherit":
++            for node in list(sp):
++                if node.tag == "{" + A + "}xfrm":
++                    sp.remove(node)
++        tx = shape.find("p:txBody", NS)
++        tx.clear()
++        tx.extend([clone(policy.body), clone(policy.style)])
++        paragraph = ET.SubElement(tx, "{" + A + "}p")
++        if item.placeholder in {"date", "slide-number"}:
++            run = ET.SubElement(
++                paragraph,
++                "{" + A + "}fld",
++                {
++                    "id": "{" + str(uuid.uuid4()).upper() + "}",
++                    "type": "slidenum"
++                    if item.placeholder == "slide-number"
++                    else "datetime1",
++                },
++            )
++        else:
++            run = ET.SubElement(paragraph, "{" + A + "}r")
++        if item.placeholder == "footer":
++            text = "".join(
++                node.text or "" for node in source_shape.findall("p:txBody//a:t", NS)
++            )
++            # The converter uses one zero-width run for an empty carrier.
++            if text == "\u200b":
++                text = ""
++        elif item.placeholder == "slide-number":
++            text = "‹#›"
++        else:
++            text = "Click to add " + str(item.placeholder)
++        ET.SubElement(run, "{" + A + "}t").text = text
++
++    def finish_layout(self, key, root):
++        plan = self.layouts[key]
++        background = self.background("layout", key)
++        if background is not None:
++            _set_background(root, background)
++        mapping = plan.get("color_map_xml")
++        if mapping is not None:
++            old = root.find("p:clrMapOvr", NS)
++            if old is not None:
++                root.remove(old)
++            root.insert(1, clone(mapping))
++        idx = self.optional_date_idx(key)
++        if idx is not None:
++            master_key = plan["master"]
++            shape = clone(self.masters[master_key][0]["date"])
++            shape.find("p:nvSpPr/p:cNvPr", NS).set("name", "Optional Date Placeholder")
++            tree = root.find("p:cSld/p:spTree", NS)
++            shape.find("p:nvSpPr/p:cNvPr", NS).set(
++                "id",
++                str(
++                    max(int(n.get("id", "1")) for n in root.iter("{" + P + "}cNvPr"))
++                    + 1
++                ),
++            )
++            shape.find(".//p:ph", NS).set("idx", str(idx))
++            shape.find("p:spPr", NS).clear()
++            tx = shape.find("p:txBody", NS)
++            tx.clear()
++            date_policy = plan.get("optional_date_defaults")
++            if date_policy is None:
++                ET.SubElement(tx, "{" + A + "}bodyPr")
++                ET.SubElement(tx, "{" + A + "}lstStyle")
++            else:
++                tx.extend([clone(date_policy.body), clone(date_policy.style)])
++            p = ET.SubElement(tx, "{" + A + "}p")
++            f = ET.SubElement(
++                p,
++                "{" + A + "}fld",
++                {"id": "{" + str(uuid.uuid4()).upper() + "}", "type": "datetime1"},
++            )
++            ET.SubElement(f, "{" + A + "}t").text = "Date"
++            _append_before_extensions(tree, shape)
++
++    def inherits_geometry(self, spec, item):
++        svg = ET.parse(spec.svg_path).getroot()
++        slot = next(n for n in svg.iter() if n.get("id") == item.element_id)
++        return "geometry" in self.slot(
++            spec, item
++        ).inherits and "geometry" not in slot.get("data-pptx-local", "").split(",")
++
++    def slide_shape(self, spec, item, shape):
++        policy = self.slot(spec, item)
++        svg = ET.parse(spec.svg_path).getroot()
++        slot = next(n for n in svg.iter() if n.get("id") == item.element_id)
++        slot_local = set(filter(None, slot.get("data-pptx-local", "").split(",")))
++        if slot_local - {"geometry"}:
++            _error(f"{item.element_id}: unsupported slot local properties")
++        if "geometry" in policy.inherits and "geometry" not in slot_local:
++            for parent in shape.iter():
++                for child in list(parent):
++                    if child.tag == "{" + A + "}xfrm":
++                        parent.remove(child)
++        tx = shape.find("p:txBody", NS)
++        if tx is None:
++            return
++        bp = tx.find("a:bodyPr", NS)
++        for token in policy.inherits:
++            if token in {
++                "lIns",
++                "rIns",
++                "tIns",
++                "bIns",
++                "anchor",
++                "anchorCtr",
++                "wrap",
++                "vert",
++                "rtlCol",
++            }:
++                bp.attrib.pop(token, None)
++        if "autofit" in policy.inherits:
++            for child in list(bp):
++                if child.tag.rsplit("}", 1)[-1] in {
++                    "noAutofit",
++                    "normAutofit",
++                    "spAutoFit",
++                }:
++                    bp.remove(child)
++        for props in tx.iter():
++            local_tag = props.tag.rsplit("}", 1)[-1]
++            if local_tag not in {"pPr", "rPr", "defRPr", "endParaRPr"}:
++                continue
++            marker = props.attrib.pop("data-pptx-local", None)
++            # Converter-owned defaults carry provenance. Empty endParaRPr is safe.
++            if marker is None and local_tag in {"rPr", "pPr"}:
++                _error(
++                    f'{spec.svg_path.name}/{item.element_id}: missing {local_tag} provenance; mark the text carrier data-pptx-native-defaults="true"'
++                )
++            local = set(filter(None, (marker or "").split(",")))
++            if local - TOKENS:
++                _error(f"unsupported local properties: {sorted(local - TOKENS)}")
++            omitted = policy.inherits - local
++            attrs = RUN_ATTRIBUTES if local_tag != "pPr" else PAR_ATTRIBUTES
++            children = RUN_CHILDREN if local_tag != "pPr" else PAR_CHILDREN
++            for token, names in attrs.items():
++                if token in omitted:
++                    for name in names if isinstance(names, tuple) else (names,):
++                        props.attrib.pop(name, None)
++            for token, names in children.items():
++                if token in omitted:
++                    for child in list(props):
++                        if child.tag.rsplit("}", 1)[-1] in names:
++                            props.remove(child)
++        if item.placeholder == "slide-number":
++            for paragraph in tx.findall("a:p", NS):
++                for run in list(paragraph):
++                    if run.tag == "{" + A + "}r":
++                        run.tag = "{" + A + "}fld"
++                        run.set("type", "slidenum")
++                        run.set("id", "{" + str(uuid.uuid4()).upper() + "}")
++
++
++def load_master_defaults(
++    resource_root: Path, specs, text_style, theme_color_spec=None, primary_language=None
++) -> MasterDefaults | None:
++    directory = Path(resource_root) / "templates"
++    path = directory / "master_defaults.json"
++    if not path.exists():
++        return None
++    try:
++        data = json.loads(path.read_text(encoding="utf-8"))
++    except (ValueError, OSError) as exc:
++        _error(str(exc))
++    _keys(
++        data,
++        {"schema", "masters", "policies", "layouts"},
++        {"preview_anchors", "color_bindings", "preview_colors"},
++    )
++    if data["schema"] != "ppt-master.master-defaults.v1":
++        _error("unknown schema")
++    bindings = {"title_hpt": text_style.title_hpt, "body_hpt": text_style.body_hpt}
++    for name, binding in data.get("color_bindings", {}).items():
++        if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
++            _error("invalid semantic color binding name")
++        _keys(binding, {"role", "fallback"})
++        fallback = binding["fallback"]
++        if not isinstance(fallback, str) or not _neutral_rgb(fallback):
++            _error("semantic color fallback must be a neutral grayscale RGB")
++        color = (
++            theme_color_spec.roles.get(binding["role"], fallback)
++            if theme_color_spec is not None
++            else fallback
++        )
++        if not isinstance(color, str) or not re.fullmatch(r"[0-9A-Fa-f]{6}", color):
++            _error("semantic color binding must resolve to a six-digit RGB")
++        bindings["color." + name] = color.upper()
++    if set(data["masters"]) != {s.master_key for s in specs}:
++        _error("Master roster mismatch")
++    if set(data["layouts"]) != {s.layout_key for s in specs}:
++        _error("Layout roster mismatch")
++    masters = {}
++    master_backgrounds = {}
++    for key, plan in data["masters"].items():
++        _keys(plan, {"placeholders", "text_styles"}, {"background"})
++        if "background" in plan:
++            master_backgrounds[key] = _read_background(
++                directory, plan["background"], bindings
++            )
++        if set(plan["placeholders"]) != set(ROLES):
++            _error("each Master requires all five roles")
++        shapes = {}
++        for role, relative in plan["placeholders"].items():
++            shape = _xml(directory, relative, "{" + P + "}sp", bindings)
++            ph = shape.find(".//p:ph", NS)
++            if ph is None or ph.get("type") != ROLES[role]:
++                _error("Master role/type mismatch")
++            shapes[role] = shape
++        styles = _xml(directory, plan["text_styles"], "{" + P + "}txStyles", bindings)
++        for kind, count in [("titleStyle", 1), ("bodyStyle", 9), ("otherStyle", 9)]:
++            node = styles.find("p:" + kind, NS)
++            if node is None or any(
++                node.find(f"a:lvl{i}pPr", NS) is None for i in range(1, count + 1)
++            ):
++                _error("incomplete Master text styles")
++        body_sizes = [
++            node.get("sz") for node in styles.findall("p:bodyStyle/*/a:defRPr", NS)
++        ]
++        if body_sizes != [str(bindings["body_hpt"])] * 9:
++            _error("body levels 1–9 must use the current project body_hpt")
++        masters[key] = (shapes, styles)
++    policies = {}
++    for key, plan in data["policies"].items():
++        _keys(plan, {"geometry", "body_properties", "list_style", "slide_inherits"})
++        if plan["geometry"] not in {"inherit", "svg-bounds"}:
++            _error("invalid geometry ownership")
++        tokens = set()
++        for group in plan["slide_inherits"]:
++            if group not in GROUPS and group not in TOKENS:
++                _error(f"unknown inherited property {group}")
++            tokens.update(GROUPS.get(group, (group,)))
++        policies[key] = SlotDefaults(
++            plan["geometry"],
++            _xml(directory, plan["body_properties"], "{" + A + "}bodyPr", bindings),
++            _xml(directory, plan["list_style"], "{" + A + "}lstStyle", bindings),
++            frozenset(tokens),
++        )
++    slots = {}
++    layouts = {}
++    for spec in specs:
++        plan = data["layouts"][spec.layout_key]
++        _keys(
++            plan,
++            {"master", "slots"},
++            {"optional_date_idx", "optional_date_policy", "color_map", "background"},
++        )
++        if plan["master"] != spec.master_key:
++            _error("Layout/Master binding mismatch")
++        if set(plan["slots"]) != {item.element_id for item in spec.placeholders}:
++            _error(f"{spec.layout_key}: slot roster mismatch")
++        for scope, has_snippet, items in (
++            ("Master", spec.master_key in master_backgrounds, spec.master_elements),
++            ("Layout", "background" in plan, spec.layout_elements),
++        ):
++            if has_snippet and any(item.is_background and item.tag == "image" for item in items):
++                _error(f"{scope} image background conflicts with a master_defaults background snippet")
++        layouts[spec.layout_key] = dict(plan)
++        if "background" in plan:
++            layouts[spec.layout_key]["background_xml"] = _read_background(
++                directory, plan["background"], bindings
++            )
++        if spec.master_key in master_backgrounds and not any(
++            item.is_background for item in spec.master_elements
++        ):
++            _error(
++                "Master background snippet requires an explicit SVG Master background fallback"
++            )
++        if "background" in plan and not any(
++            item.is_background for item in spec.layout_elements
++        ):
++            _error(
++                "Layout background snippet requires an explicit SVG Layout background fallback"
++            )
++        if "optional_date_policy" in plan:
++            if (
++                "optional_date_idx" not in plan
++                or plan["optional_date_policy"] not in policies
++            ):
++                _error("optional date policy requires a valid policy and idx")
++            date_policy = policies[plan["optional_date_policy"]]
++            if date_policy.geometry != "inherit":
++                _error("optional date policy must inherit Master geometry")
++            layouts[spec.layout_key]["optional_date_defaults"] = date_policy
++        if "color_map" in plan:
++            layouts[spec.layout_key]["color_map_xml"] = _xml(
++                directory, plan["color_map"], "{" + P + "}clrMapOvr", bindings
++            )
++        if "optional_date_idx" in plan:
++            idx = plan["optional_date_idx"]
++            if (
++                type(idx) is not int
++                or idx < 1
++                or idx > 4294967295
++                or any(
++                    i.placeholder == "date" or i.placeholder_idx == idx
++                    for i in spec.placeholders
++                )
++            ):
++                _error("optional date idx collides with a real slot")
++        for item in spec.placeholders:
++            name = plan["slots"][item.element_id]
++            if name not in policies:
++                _error(f"unknown policy {name}")
++            slots[(spec.layout_key, item.element_id)] = policies[name]
++            root = ET.parse(spec.svg_path).getroot()
++            slot_node = next(n for n in root.iter() if n.get("id") == item.element_id)
++            carrier = next(
++                (n for n in slot_node.iter() if n.get("data-pptx-carrier") == "true"),
++                None,
++            )
++            if (
++                carrier is not None
++                and carrier.tag.rsplit("}", 1)[-1] == "text"
++                and carrier.get("data-pptx-native-defaults") != "true"
++            ):
++                _error(
++                    f'{spec.svg_path.name}/{item.element_id}: text carrier requires data-pptx-native-defaults="true"'
++                )
++    if primary_language is not None:
++        for shapes, styles in masters.values():
++            for shape in shapes.values():
++                bind_template_text_language(shape, primary_language)
++            bind_template_text_language(styles, primary_language)
++        for policy in policies.values():
++            bind_template_text_language(policy.body, primary_language)
++            bind_template_text_language(policy.style, primary_language)
++    profile = MasterDefaults(masters, layouts, slots, path, master_backgrounds)
++    for spec in specs:
++        svg = ET.parse(spec.svg_path).getroot()
++        for item in spec.placeholders:
++            slot_node = next(n for n in svg.iter() if n.get("id") == item.element_id)
++            carrier = next(
++                (n for n in slot_node.iter() if n.get("data-pptx-carrier") == "true"),
++                None,
++            )
++            if carrier is None or carrier.tag.rsplit("}", 1)[-1] != "text":
++                continue
++            policy = profile.slot(spec, item)
++            local = set(carrier.get("data-pptx-local", "").split(","))
++            raw_size = carrier.get("font-size")
++            if (
++                "size" in policy.inherits
++                and "size" not in local
++                and raw_size is not None
++                and re.fullmatch(r"[0-9.]+(?:px)?", raw_size)
++            ):
++                expected_size = effective_default_attribute(
++                    profile, spec.master_key, item.placeholder, policy, "sz"
++                )
++                actual_size = round(float(raw_size.removesuffix("px")) * 75 / 10) * 10
++                if (
++                    expected_size is not None
++                    and abs(actual_size - int(expected_size)) > 10
++                ):
++                    _error(
++                        f"{spec.svg_path.name}/{item.element_id}: inherited size fallback {actual_size}hpt differs from declared default {expected_size}hpt; update the fallback or declare a local size override"
++                    )
++    return profile
++
++
++def effective_default_attribute(profile, master_key, role, policy, attribute, level=1):
++    """Resolve a default using OOXML role inheritance, never placeholder idx."""
++    role = role if role in ROLES else "body"
++    shapes, styles = profile.masters[master_key]
++    style_kind = (
++        "titleStyle"
++        if role == "title"
++        else "bodyStyle"
++        if role == "body"
++        else "otherStyle"
++    )
++    candidates = [
++        policy.style.find(f"a:lvl{level}pPr/a:defRPr", NS),
++        shapes[role].find(f"p:txBody/a:lstStyle/a:lvl{level}pPr/a:defRPr", NS),
++        styles.find(f"p:{style_kind}/a:lvl{level}pPr/a:defRPr", NS),
++    ]
++    return next(
++        (
++            node.get(attribute)
++            for node in candidates
++            if node is not None and attribute in node.attrib
++        ),
++        None,
++    )
++
++
++def _bounds(shape):
++    x = shape.find("p:spPr/a:xfrm", NS)
++    if x is None:
++        return None
++    off, ext = x.find("a:off", NS), x.find("a:ext", NS)
++    if off is None or ext is None:
++        return None
++    return tuple(
++        int(n.get(k)) for n, k in [(off, "x"), (off, "y"), (ext, "cx"), (ext, "cy")]
++    )
++
++
++def validate_defaults_slot(
++    profile, spec, item, layout_shape, slide_shapes, master_root, errors
++):
++    """Check effective geometry and explicit sparse ownership, independently."""
++    context = f"{spec.layout_key}/{item.element_id}"
++    policy = profile.slot(spec, item)
++    role = item.placeholder if item.placeholder in ROLES else "body"
++    master_shape = next(
++        (
++            s
++            for s in master_root.findall("p:cSld/p:spTree/p:sp", NS)
++            if (
++                s.find(".//p:ph", NS) is not None
++                and s.find(".//p:ph", NS).get("type") == ROLES[role]
++            )
++        ),
++        None,
++    )
++    if master_shape is None:
++        errors.append(context + ": missing Master role")
++        return
++    own_bounds = _bounds(layout_shape)
++    effective = own_bounds or _bounds(master_shape)
++    if policy.geometry == "inherit" and own_bounds is not None:
++        errors.append(context + ": Layout geometry must inherit")
++    if policy.geometry == "svg-bounds" and own_bounds is None:
++        errors.append(context + ": Layout geometry override is missing")
++    expected = (
++        tuple(round(v * 9525) for v in item.placeholder_bounds)
++        if item.placeholder_bounds
++        else None
++    )
++    if effective is None or (
++        expected is not None
++        and any(abs(a - b) > 96 for a, b in zip(effective, expected))
++    ):
++        errors.append(
++            context + f": effective geometry {effective} differs from SVG {expected}"
++        )
++    for tag, expected_xml in [("bodyPr", policy.body), ("lstStyle", policy.style)]:
++        actual = layout_shape.find("p:txBody/a:" + tag, NS)
++        if actual is None or ET.tostring(actual) != ET.tostring(expected_xml):
++            errors.append(
++                context
++                + ": Layout "
++                + tag
++                + " differs from its declared sparse defaults"
++            )
++    for slide_spec, shape in slide_shapes:
++        svg = ET.parse(slide_spec.svg_path).getroot()
++        slot = next(n for n in svg.iter() if n.get("id") == item.element_id)
++        local_geometry = "geometry" in slot.get("data-pptx-local", "").split(",")
++        if (
++            "geometry" in policy.inherits
++            and not local_geometry
++            and _bounds(shape) is not None
++        ):
++            errors.append(context + ": Slide geometry must inherit")
++        if (
++            item.placeholder == "slide-number"
++            and shape.find('.//a:fld[@type="slidenum"]', NS) is None
++        ):
++            errors.append(context + ": automatic slide number field missing")
++        for node in shape.iter():
++            if any(k.startswith("data-pptx-") for k in node.attrib):
++                errors.append(context + ": converter provenance leaked into OOXML")
++        # No run can acquire an undeclared local property from the converter.
++        # Nested rich text declarations and explicit metadata authorize locals.
++        allowed = set()
++        mapping = {
++            "font-size": {"size"},
++            "font-weight": {"bold"},
++            "font-style": {"italic"},
++            "font-family": {"latin", "ea", "cs"},
++            "fill": {"color"},
++            "opacity": {"color"},
++            "fill-opacity": {"color"},
++            "text-decoration": {"underline", "strike"},
++            "letter-spacing": {"tracking"},
++            "baseline-shift": {"baseline"},
++        }
++        carrier = next(
++            (n for n in slot.iter() if n.get("data-pptx-carrier") == "true"), None
++        )
++        if carrier is not None:
++            for n in carrier.iter():
++                allowed.update(filter(None, n.get("data-pptx-local", "").split(",")))
++                if n is not carrier:
++                    for attr, tokens in mapping.items():
++                        if attr in n.attrib or attr + ":" in n.get("style", "").replace(
++                            " ", ""
++                        ):
++                            allowed.update(tokens)
++        for props in shape.findall("p:txBody//a:rPr", NS):
++            for token, attr in RUN_ATTRIBUTES.items():
++                if (
++                    token in policy.inherits
++                    and token not in allowed
++                    and attr in props.attrib
++                ):
++                    errors.append(context + ": unexpected Slide local " + token)
++            for token, tags in RUN_CHILDREN.items():
++                if (
++                    token in policy.inherits
++                    and token not in allowed
++                    and any(props.find("a:" + t, NS) is not None for t in tags)
++                ):
++                    errors.append(context + ": unexpected Slide local " + token)
++
++
++def preview_anchor_sizes(resource_root: Path, svg_files: list[Path]):
++    """Read provisional preview sizes from named slots, never project typography."""
++    path = Path(resource_root) / "templates" / "master_defaults.json"
++    if not path.is_file():
++        return None
++    data = json.loads(path.read_text(encoding="utf-8"))
++    anchors = data.get("preview_anchors")
++    if anchors is None:
++        return None
++    _keys(anchors, {"title", "body"})
++    roots = {
++        root.get("data-pptx-layout"): root
++        for root in (ET.parse(p).getroot() for p in svg_files)
++    }
++    result = []
++    for role in ("title", "body"):
++        anchor = anchors[role]
++        _keys(anchor, {"layout", "slot"})
++        root = roots.get(anchor["layout"])
++        if root is None:
++            _error("preview anchor Layout is missing")
++        slot = next((n for n in root.iter() if n.get("id") == anchor["slot"]), None)
++        if slot is None:
++            _error("preview anchor slot is missing")
++        carrier = next(
++            (n for n in slot.iter() if n.get("data-pptx-carrier") == "true"), None
++        )
++        if carrier is None:
++            _error("preview anchor carrier is missing")
++        try:
++            px = float(carrier.get("font-size", root.get("font-size", "")))
++        except ValueError:
++            _error("preview anchor must have an explicit numeric font-size")
++        if not 0 < px < 1000:
++            _error("preview anchor size out of range")
++        result.append(px)
++    return tuple(result)
++
++
++def validate_defaults_master(profile, key, root, errors):
++    shapes, expected_styles = profile.masters[key]
++    actual_styles = root.find("p:txStyles", NS)
++    if actual_styles is None or ET.tostring(actual_styles) != ET.tostring(
++        expected_styles
++    ):
++        errors.append(
++            f"Master {key}: text styles differ from the native defaults contract"
++        )
++    actual_shapes = {}
++    for shape in root.findall("p:cSld/p:spTree/p:sp", NS):
++        ph = shape.find(".//p:ph", NS)
++        if ph is not None:
++            actual_shapes.setdefault(ph.get("type"), []).append(shape)
++    if set(actual_shapes) != set(ROLES.values()) or any(
++        len(v) != 1 for v in actual_shapes.values()
++    ):
++        errors.append(f"Master {key}: expected exactly five native placeholder roles")
++    for role, expected in shapes.items():
++        actual = actual_shapes.get(ROLES[role], [])
++        if len(actual) != 1:
++            continue
++        for part in ("spPr", "txBody"):
++            left, right = (
++                actual[0].find("p:" + part, NS),
++                expected.find("p:" + part, NS),
++            )
++            if left is None or right is None or ET.tostring(left) != ET.tostring(right):
++                errors.append(
++                    f"Master {key}/{role}: {part} differs from declared defaults"
++                )
++
++
++def validate_optional_date(profile, layout_key, root, errors):
++    plan = profile.layouts[layout_key]
++    idx = plan.get("optional_date_idx")
++    policy = plan.get("optional_date_defaults")
++    if idx is None or policy is None:
++        return
++    shapes = [
++        shape
++        for shape in root.findall("p:cSld/p:spTree/p:sp", NS)
++        if shape.find(f'.//p:ph[@idx="{idx}"]', NS) is not None
++    ]
++    if len(shapes) != 1:
++        return  # The roster validator reports the missing or duplicate slot.
++    shape = shapes[0]
++    if _bounds(shape) is not None:
++        errors.append(f"{layout_key}: optional date geometry must inherit")
++    for tag, expected in [("bodyPr", policy.body), ("lstStyle", policy.style)]:
++        actual = shape.find("p:txBody/a:" + tag, NS)
++        if actual is None or ET.tostring(actual) != ET.tostring(expected):
++            errors.append(
++                f"{layout_key}: optional date {tag} differs from declared defaults"
++            )
++    if shape.find('.//a:fld[@type="datetime1"]', NS) is None:
++        errors.append(f"{layout_key}: optional date field is missing")
++
++
++def preview_color_spec(resource_root: Path):
++    """Use explicit neutral sample colors only for template review export."""
++    path = Path(resource_root) / "templates" / "master_defaults.json"
++    if not path.is_file():
++        return None
++    palette = json.loads(path.read_text(encoding="utf-8")).get("preview_colors")
++    if palette is None:
++        return None
++    _keys(palette, {"dk1", "dk2", "lt1", "lt2"})
++    if any(
++        not isinstance(color, str) or re.fullmatch(r"[0-9A-Fa-f]{6}", color) is None
++        for color in palette.values()
++    ):
++        _error("preview_colors must contain six-digit provisional RGB values")
++    return ThemeColorSpec(dict(palette), {}, {})
+--- /dev/null
++++ b/scripts/svg_to_pptx/pptx_package/template_language.py
+@@ -0,0 +1,56 @@
++"""Bind generated template defaults and their validation contract identically."""
++
++from __future__ import annotations
++
++from xml.etree import ElementTree as ET
++
++from language_tags import language_uses_rtl
++
++from ..drawingml.utils import detect_text_lang
++
++DML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
++PML_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
++_PARAGRAPH_TAGS = {f"{{{DML_NS}}}pPr"} | {
++    f"{{{DML_NS}}}lvl{i}pPr" for i in range(1, 10)
++}
++
++
++def bind_template_text_language(root: ET.Element, language: str) -> bool:
++    """Apply deck proofing defaults and script-aware run languages in place."""
++    updates = {
++        props: language
++        for tag in ("defRPr", "endParaRPr")
++        for props in root.iter(f"{{{DML_NS}}}{tag}")
++    }
++    changed = False
++    for tag in ("r", "fld"):
++        for run in root.iter(f"{{{DML_NS}}}{tag}"):
++            text = run.find(f"{{{DML_NS}}}t")
++            if text is None or not (text.text or "").strip():
++                continue
++            props = run.find(f"{{{DML_NS}}}rPr")
++            if props is None:
++                props = ET.Element(f"{{{DML_NS}}}rPr")
++                run.insert(0, props)
++                changed = True
++            updates[props] = detect_text_lang(text.text, language)
++    for shape in root.iter(f"{{{PML_NS}}}sp"):
++        placeholder = shape.find(f"{{{PML_NS}}}nvSpPr/{{{PML_NS}}}nvPr/{{{PML_NS}}}ph")
++        if placeholder is not None and not any(
++            (text.text or "").strip() for text in shape.iter(f"{{{DML_NS}}}t")
++        ):
++            for props in shape.iter(f"{{{DML_NS}}}rPr"):
++                updates[props] = language
++    for props, value in updates.items():
++        if props.get("lang") != value:
++            props.set("lang", value)
++            changed = True
++    if language_uses_rtl(language):
++        for node in root.iter():
++            if node.tag not in _PARAGRAPH_TAGS or node.get("rtl") != "0":
++                continue
++            node.set("rtl", "1")
++            if node.get("algn") == "l":
++                node.set("algn", "r")
++            changed = True
++    return changed
+--- a/scripts/svg_to_pptx/pptx_package/template_structure.py
++++ b/scripts/svg_to_pptx/pptx_package/template_structure.py
+@@ -26,7 +26,7 @@
+ import zipfile
+ from dataclasses import dataclass
+ from pathlib import Path
+-from typing import Any
++from typing import Any, Literal, cast
+ from xml.etree import ElementTree as ET
+ 
+ from native_payloads import NativePayloadError, hydrate_native_payload_refs
+@@ -57,6 +57,7 @@
+ _NON_VISUAL_TAGS = frozenset({"defs", "title", "desc", "metadata", "style"})
+ _STRUCTURE_ATTRS = frozenset({
+     "data-pptx-layer",
++    "data-pptx-background",
+     "data-pptx-layout",
+     "data-pptx-layout-kind",
+     "data-pptx-layout-name",
+@@ -65,6 +66,7 @@
+     "data-pptx-show-inherited-shapes",
+     "data-pptx-show-master-shapes",
+     "data-pptx-placeholder",
++    "data-pptx-vertical-align",
+     "data-pptx-binding",
+     "data-pptx-carrier",
+     "data-pptx-idx",
+@@ -312,6 +314,7 @@
+     placeholder_binding: str | None = None
+     placeholder_carrier_tag: str | None = None
+     is_background: bool = False
++    placeholder_vertical_align: Literal["top", "center", "bottom"] | None = None
+ 
+     def contract_signature(self) -> tuple[object, ...]:
+         """Return metadata that must agree across slides sharing a structure."""
+@@ -325,6 +328,7 @@
+             self.placeholder_binding,
+             self.placeholder_carrier_tag,
+             self.is_background,
++            self.placeholder_vertical_align,
+         )
+ 
+ 
+@@ -513,6 +517,35 @@
+                 return False
+         except ValueError:
+             return False
++    return True
++
++
++def _is_explicit_image_background(
++    elem: ET.Element, canvas: tuple[float, float, float, float], *, root: ET.Element,
++) -> bool:
++    marker = elem.get("data-pptx-background")
++    if marker is None:
++        return False
++    label = elem.get("id") or _local_tag(elem)
++    if (marker != "image" or _local_tag(elem) != "image"
++            or elem.get("data-pptx-layer") not in {"master", "layout"}
++            or elem.get("preserveAspectRatio") != "none"):
++        raise TemplateStructureError(
++            f"{label}: image background requires a direct image, master/layout layer, and preserveAspectRatio='none'"
++        )
++    forbidden = {"transform", "filter", "clip-path", "mask", "opacity", "display", "visibility"}
++    for node in (root, elem):
++        style = parse_inline_style(node.get("style"))
++        if any(node.get(name) is not None or name in style for name in forbidden):
++            raise TemplateStructureError(f"{label}: image background cannot use transforms, effects, opacity, or hidden paint")
++    try:
++        geometry = tuple(parse_project_geometry_length(elem.get(key, "0"), key)
++                         for key in ("x", "y", "width", "height"))
++    except ValueError as exc:
++        raise TemplateStructureError(f"{label}: invalid image background bounds") from exc
++    if any(not math.isfinite(actual) or abs(actual - expected) > 1e-6
++           for actual, expected in zip(geometry, canvas)):
++        raise TemplateStructureError(f"{label}: image background must cover the exact full canvas")
+     return True
+ 
+ 
+@@ -1540,6 +1573,9 @@
+     except CanvasContractError as exc:
+         raise TemplateStructureError(str(exc)) from exc
+ 
++    if not structured and any(node.get("data-pptx-background") is not None for node in root.iter()):
++        raise TemplateStructureError("Explicit image backgrounds require authored structured export; source-preserve is unsupported")
++
+     geometry_errors = project_geometry_length_errors(root)
+     if geometry_errors:
+         preview = "; ".join(geometry_errors[:8])
+@@ -1657,7 +1693,9 @@
+         binding_raw = elem.get("data-pptx-binding")
+         carrier_raw = elem.get("data-pptx-carrier")
+         editable_raw = elem.get("data-pptx-editable")
+-        is_background = _is_full_canvas_solid_rect(elem, canvas, root=root)
++        vertical_align_raw = elem.get("data-pptx-vertical-align")
++        is_background = (_is_explicit_image_background(elem, canvas, root=root)
++                         or _is_full_canvas_solid_rect(elem, canvas, root=root))
+         effective_layer = layer or ("slide" if is_background else None)
+ 
+         if (
+@@ -1902,6 +1940,24 @@
+                         "the SVG root: " + ", ".join(nested_attrs)
+                     )
+ 
++        placeholder_vertical_align = None
++        if vertical_align_raw is not None:
++            if not placeholder or placeholder_carrier_tag != "text":
++                raise TemplateStructureError(
++                    f"{svg_path.name}: {element_id or tag} "
++                    "data-pptx-vertical-align requires a text-carrier placeholder"
++                )
++            normalized_vertical_align = vertical_align_raw.strip().lower()
++            if normalized_vertical_align not in {"top", "center", "bottom"}:
++                raise TemplateStructureError(
++                    f"{svg_path.name}: {element_id or tag} has unsupported "
++                    f"data-pptx-vertical-align={vertical_align_raw!r}; "
++                    "expected top, center, or bottom"
++                )
++            placeholder_vertical_align = cast(
++                Literal["top", "center", "bottom"], normalized_vertical_align
++            )
++
+         if effective_layer or placeholder:
+             elements.append(TemplateElementSpec(
+                 element_id=element_id,
+@@ -1914,6 +1970,7 @@
+                 placeholder_binding=placeholder_binding,
+                 placeholder_carrier_tag=placeholder_carrier_tag,
+                 is_background=is_background,
++                placeholder_vertical_align=placeholder_vertical_align,
+             ))
+         visual_order += 1
+ 
+@@ -3725,7 +3782,12 @@
+         layer = (elem.get("data-pptx-layer") or "").strip().lower() or None
+         if layer not in _LAYERS:
+             layer = None
+-        is_background = _is_full_canvas_solid_rect(elem, canvas, root=root)
++        try:
++            is_background = (_is_explicit_image_background(elem, canvas, root=root)
++                             or _is_full_canvas_solid_rect(elem, canvas, root=root))
++        except TemplateStructureError as exc:
++            errors.append(f"{svg_path.name}: {exc}")
++            continue
+         effective_layer = layer or ("slide" if is_background else None)
+         if is_background and effective_layer is not None:
+             order_rank = {"master": 0, "layout": 1, "slide": 2}[effective_layer]
+--- a/scripts/svg_to_pptx/pptx_package/template_validation.py
++++ b/scripts/svg_to_pptx/pptx_package/template_validation.py
+@@ -15,13 +15,15 @@
+ """
+ 
+ from __future__ import annotations
++from .master_defaults import MasterDefaults, validate_defaults_master, validate_defaults_slot, validate_optional_date
++
+ 
+ import posixpath
+ import sys
+ import zipfile
+ from collections import Counter
+ from dataclasses import dataclass
+-from pathlib import Path
++from pathlib import Path, PurePosixPath
+ from urllib.parse import unquote, urlsplit
+ from xml.etree import ElementTree as ET
+ 
+@@ -300,6 +302,44 @@
+ def _has_explicit_background(root: ET.Element) -> bool:
+     c_sld = root.find(f"{{{PML_NS}}}cSld")
+     return c_sld is not None and c_sld.find(f"{{{PML_NS}}}bg") is not None
++
++
++def _validate_image_background(reader: _PackageReader, part: str, root: ET.Element) -> None:
++    backgrounds = root.findall(f"{{{PML_NS}}}cSld/{{{PML_NS}}}bg")
++    if len(backgrounds) != 1:
++        reader.errors.append(f"{part}: image background requires exactly one p:bg")
++        return
++    fill = backgrounds[0].find(f"{{{PML_NS}}}bgPr/{{{DML_NS}}}blipFill")
++    blip = fill.find(f"{{{DML_NS}}}blip") if fill is not None else None
++    if fill is None or blip is None or not blip.get(f"{{{REL_NS}}}embed"):
++        reader.errors.append(f"{part}: explicit image background requires an embedded a:blipFill")
++        return
++    if (fill.find(f"{{{DML_NS}}}stretch/{{{DML_NS}}}fillRect") is None
++            or fill.find(f"{{{DML_NS}}}tile") is not None):
++        reader.errors.append(f"{part}: image background must use uncropped stretch")
++    crop = fill.find(f"{{{DML_NS}}}srcRect")
++    if crop is not None and any(value != "0" for value in crop.attrib.values()):
++        reader.errors.append(f"{part}: image background cannot be cropped")
++    content_types = reader.xml("[Content_Types].xml")
++    declarations = list(content_types) if content_types is not None else []
++    defaults = {n.get("Extension"): n.get("ContentType", "") for n in declarations if n.tag.endswith("}Default")}
++    overrides = {n.get("PartName"): n.get("ContentType", "") for n in declarations if n.tag.endswith("}Override")}
++    relations = {r.rel_id: r for r in reader.relationships(part)}
++    for node in fill.iter():
++        for attr, rid in node.attrib.items():
++            if not attr.startswith("{" + REL_NS + "}"):
++                continue
++            relation = relations.get(rid)
++            if relation is None or not relation.rel_type.endswith("/image"):
++                reader.errors.append(f"{part}: image background references missing/non-image relationship {rid}")
++                continue
++            target = _resolve_relationship_target(part, relation, reader.errors, f"{part} background")
++            if target is not None:
++                if target not in reader.names:
++                    reader.errors.append(f"{part}: image background target is missing: {target}")
++                content_type = overrides.get("/" + target, defaults.get(PurePosixPath(target).suffix[1:], ""))
++                if not content_type.startswith("image/"):
++                    reader.errors.append(f"{part}: background target lacks an image content type: {target}")
+ 
+ 
+ def _xml_payload_signature(elem: ET.Element) -> tuple[object, ...]:
+@@ -479,9 +519,14 @@
+     errors: list[str],
+     *,
+     is_layout: bool,
++    optional_date_idx: int | None = None,
+ ) -> dict[int, _Placeholder]:
+     actual = _read_placeholders(root, context, errors)
+     expected = {binding.effective_idx: binding for binding in bindings}
++    if optional_date_idx is not None:
++        optional = actual.pop(optional_date_idx, None)
++        if optional is None or optional.placeholder_type != "dt":
++            errors.append(f"{context} is missing its optional date capability")
+     if set(actual) != set(expected):
+         errors.append(
+             f"{context} placeholder idx roster is {sorted(actual)}, "
+@@ -874,6 +919,7 @@
+     expected_master_parts: dict[str, str] | None = None,
+     expected_backgrounds: dict[str, str | None] | None = None,
+     expected_shape_rosters: dict[str, tuple[str, ...]] | None = None,
++    master_defaults: MasterDefaults | None = None,
+ ) -> None:
+     """Validate a finished structured PPTX against its explicit SVG contract.
+ 
+@@ -1091,7 +1137,10 @@
+                     f"Layout {layout_key!r}",
+                     errors,
+                     is_layout=True,
+-                )
++                    optional_date_idx=master_defaults.optional_date_idx(layout_key) if master_defaults else None,
++                )
++                if master_defaults is not None:
++                    validate_optional_date(master_defaults, layout_key, layout_root, errors)
+                 _validate_layout_header_footer(
+                     layout_root,
+                     bindings,
+@@ -1108,6 +1157,8 @@
+                         or item.placeholder
+                     )
+                 )
++                if master_defaults and master_defaults.optional_date_idx(layout_key) is not None:
++                    expected_layout_names += ("Optional Date Placeholder",)
+                 _validate_named_shape_roster(
+                     layout_root,
+                     expected_layout_names,
+@@ -1119,6 +1170,8 @@
+                 expected_layout_background = any(
+                     item.is_background for item in prototype.layout_elements
+                 )
++                if any(item.is_background and item.tag == "image" for item in prototype.layout_elements):
++                    _validate_image_background(reader, layout_part, layout_root)
+                 actual_layout_background = _has_explicit_background(layout_root)
+                 if actual_layout_background != expected_layout_background:
+                     errors.append(
+@@ -1286,6 +1339,14 @@
+                         f"Layout {layout_key!r} placeholder "
+                         f"{binding.element.element_id!r}"
+                     )
++                    if master_defaults is not None:
++                        master_relation = _single_relationship_target(reader, layout_part, SLIDE_MASTER_REL_TYPE, context)
++                        if master_relation is not None:
++                            master_xml = reader.xml(master_relation[1])
++                            if master_xml is not None:
++                                candidates = [(s, slide_placeholders[s.slide_num][idx].shape) for s in public_specs_by_layout.get(layout_key, []) if idx in slide_placeholders.get(s.slide_num, {}) and not is_proxy_placeholder(binding.element)]
++                                validate_defaults_slot(master_defaults, prototype, binding.element, layout_placeholder.shape, candidates, master_xml, errors)
++                        continue
+                     actual_bounds = _shape_bounds(
+                         layout_placeholder.shape,
+                         context,
+@@ -1401,6 +1462,8 @@
+                     continue
+                 master_spec = master_specs_by_part.get(master_part)
+                 if master_spec is not None:
++                    if master_defaults is not None:
++                        validate_defaults_master(master_defaults, master_spec.master_key, master_root, errors)
+                     master_c_sld = master_root.find(f"{{{PML_NS}}}cSld")
+                     actual_master_name = (
+                         master_c_sld.get("name")
+@@ -1419,12 +1482,14 @@
+                             f"{item.element_id} Master"
+                             for item in master_spec.master_elements
+                             if not item.is_background
+-                        ),
++                        ) + (master_defaults.master_names(master_spec.master_key) if master_defaults else ()),
+                         f"Master {master_part}",
+                         errors,
+                         exact=True,
+                         ordered=True,
+                     )
++                    if any(item.is_background and item.tag == "image" for item in master_spec.master_elements):
++                        _validate_image_background(reader, master_part, master_root)
+                     expected_master_background = any(
+                         item.is_background
+                         for item in master_spec.master_elements
+--- a/scripts/template_preview_pptx.py
++++ b/scripts/template_preview_pptx.py
+@@ -24,6 +24,7 @@
+ import sys
+ import tempfile
+ from collections.abc import Iterator
++from dataclasses import replace
+ from pathlib import Path
+ from xml.etree import ElementTree as ET
+ 
+@@ -39,6 +40,7 @@
+ from svg_to_pptx.drawingml.theme_fonts import (  # noqa: E402
+     infer_master_text_style_spec,
+ )
++from svg_to_pptx.pptx_package.master_defaults import preview_anchor_sizes, preview_color_spec
+ from svg_to_pptx.pptx_package.builder import (  # noqa: E402
+     create_pptx_with_native_svg,
+ )
+@@ -241,6 +243,7 @@
+     output_path: Path,
+     *,
+     require_full_placeholder_frames: bool,
++    native_defaults: bool = False,
+ ) -> tuple[int, int, int, int]:
+     """Reopen the review deck and verify counts plus authored placeholder frames."""
+     presentation = Presentation(str(output_path))
+@@ -257,6 +260,9 @@
+                 shape.placeholder_format.idx: shape
+                 for shape in slide.placeholders
+             }
++            if native_defaults:
++                # Date capability exists on the Layout without a Slide instance.
++                layout_placeholders = {idx: shape for idx, shape in layout_placeholders.items() if idx in slide_placeholders or str(shape.placeholder_format.type) != "DATE (16)"}
+             if set(slide_placeholders) != set(layout_placeholders):
+                 raise ValueError(
+                     f"review slide {slide_number} placeholder indexes do not match "
+@@ -367,6 +373,9 @@
+             raise ValueError(
+                 "design_spec.md frontmatter must declare canvas_viewbox"
+             )
++        native_defaults = (template_dir / "master_defaults.json").is_file()
++        if native_defaults and replication_mode == "mirror":
++            raise ValueError("master_defaults.json is not allowed in mirror workspaces")
+         use_full_placeholder_frames = replication_mode != "mirror"
+         output_path = (
+             Path(args.output).expanduser().resolve()
+@@ -383,6 +392,10 @@
+         text_style, title_px, body_px = infer_master_text_style_spec(
+             all_svg_files
+         )
++        anchors = preview_anchor_sizes(workspace, all_svg_files)
++        if anchors is not None:
++            title_px, body_px = anchors
++            text_style = replace(text_style, title_hpt=round(title_px * 75), body_hpt=round(body_px * 75))
+         typed_slots = sorted({
+             item.placeholder
+             for spec in parse_template_slides(svg_files)
+@@ -401,7 +414,7 @@
+             print("  Review placeholder frames: preserved source Slide geometry")
+         else:
+             print(f"  Review Master defaults: title {title_px:g}px, body {body_px:g}px")
+-            print("  Review placeholder frames: full Layout bounds")
++            print("  Review placeholder frames: effective inherited bounds" if native_defaults else "  Review placeholder frames: full Layout bounds")
+         print(f"  Output: {output_path}")
+ 
+         with _review_svg_sources(
+@@ -424,6 +437,7 @@
+                 pptx_structure="structured",
+                 use_layout_placeholder_frames=use_full_placeholder_frames,
+                 master_text_style_spec=text_style,
++                theme_color_spec=preview_color_spec(workspace),
+                 structure_name=template_id,
+                 source_theme_xml_by_master=source_themes,
+             )
+@@ -434,6 +448,7 @@
+         slide_count, master_count, layout_count, placeholder_count = _verify_output(
+             output_path,
+             require_full_placeholder_frames=use_full_placeholder_frames,
++            native_defaults=native_defaults,
+         )
+         if slide_count != len(svg_files):
+             print(
+@@ -443,8 +458,9 @@
+             )
+             return 1
+ 
++        frame_label = "effective-frame" if native_defaults else "full-frame"
+         placeholder_status = (
+-            f", {placeholder_count} full-frame placeholder(s)"
++            f", {placeholder_count} {frame_label} placeholder(s)"
+             if use_full_placeholder_frames
+             else ""
+         )

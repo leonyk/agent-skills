@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="03e_content_table" data-pptx-layout-name="10 表格">
+<rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false" />
+<rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false" /><image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark" /><g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80.72 19.15 1120.32 86.4" data-pptx-vertical-align="bottom">
+<text id="title-carrier" data-pptx-carrier="true" x="80.72" y="94.35" font-size="32" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{PAGE_TITLE}}</text>
+</g>
+<g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-idx="1" data-pptx-bounds="80.5 106.03 1120.32 34.7" data-pptx-vertical-align="center">
+<text id="subtitle-carrier" data-pptx-carrier="true" x="80.5" y="130.03" font-size="26.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SUBTITLE}}</text>
+</g>
+<g id="table-slot" data-pptx-placeholder="table" data-pptx-idx="2" data-pptx-bounds="80 184 1120 350">
+<g id="table-carrier" data-pptx-carrier="true" data-pptx-replace-with="table" data-pptx-native-authority="json">
+<metadata type="application/json">{"schema": "ppt-master.semantic-table.v2", "name": "oracle-example-table", "x": 80, "y": 184, "width": 1120, "height": 350, "strict_grid": true, "column_widths": [400, 240, 240, 240], "row_heights": [1, 1, 1, 1, 1, 1, 1], "style": {"font_family": "Arial", "font_size": 22, "header_font_size": 22, "header_fill": "#424B50", "header_text": "#F4F5F5", "body_fill": "#252A2D", "body_text": "#F4F5F5", "band_row": false, "padding": {"left": 16, "right": 16, "top": 8, "bottom": 8}, "valign": "middle"}, "defaults": {"cell": {"borders": {"left": {"style": "none"}, "right": {"style": "none"}, "top": {"style": "none"}, "bottom": {"style": "solid", "color": "#5A6266", "width": 1}}}}, "columns": [{"text": "Metric", "bold": true, "align": "l"}, {"text": "Series A", "bold": true, "align": "r"}, {"text": "Series B", "bold": true, "align": "r"}, {"text": "Difference", "bold": true, "align": "r"}], "rows": [[{"text": "Metric 01", "align": "l"}, {"text": "42", "align": "r"}, {"text": "48", "align": "r"}, {"text": "+6", "align": "r"}], [{"text": "Metric 02", "align": "l"}, {"text": "55", "align": "r"}, {"text": "58", "align": "r"}, {"text": "+3", "align": "r"}], [{"text": "Metric 03", "align": "l"}, {"text": "63", "align": "r"}, {"text": "68", "align": "r"}, {"text": "+5", "align": "r"}], [{"text": "Metric 04", "align": "l"}, {"text": "78", "align": "r"}, {"text": "74", "align": "r"}, {"text": "-4", "align": "r"}], [{"text": "Metric 05", "align": "l"}, {"text": "61", "align": "r"}, {"text": "65", "align": "r"}, {"text": "+4", "align": "r"}], [{"text": "Metric 06", "align": "l"}, {"text": "72", "align": "r"}, {"text": "78", "align": "r"}, {"text": "+6", "align": "r"}]]}</metadata>
+<rect x="80" y="184" width="1120" height="50" fill="#424B50" />
+<text x="96.0" y="217.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="bold">Metric</text>
+<text x="704.0" y="217.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="bold">Series A</text>
+<text x="944.0" y="217.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="bold">Series B</text>
+<text x="1184.0" y="217.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="bold">Difference</text>
+<line x1="80" y1="234" x2="1200" y2="234" stroke="#5A6266" stroke-width="1" />
+<rect x="80" y="234" width="1120" height="50" fill="#252A2D" />
+<text x="96.0" y="267.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="normal">Metric 01</text>
+<text x="704.0" y="267.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">42</text>
+<text x="944.0" y="267.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">48</text>
+<text x="1184.0" y="267.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">+6</text>
+<line x1="80" y1="284" x2="1200" y2="284" stroke="#5A6266" stroke-width="1" />
+<rect x="80" y="284" width="1120" height="50" fill="#252A2D" />
+<text x="96.0" y="317.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="normal">Metric 02</text>
+<text x="704.0" y="317.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">55</text>
+<text x="944.0" y="317.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">58</text>
+<text x="1184.0" y="317.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">+3</text>
+<line x1="80" y1="334" x2="1200" y2="334" stroke="#5A6266" stroke-width="1" />
+<rect x="80" y="334" width="1120" height="50" fill="#252A2D" />
+<text x="96.0" y="367.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="normal">Metric 03</text>
+<text x="704.0" y="367.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">63</text>
+<text x="944.0" y="367.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">68</text>
+<text x="1184.0" y="367.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">+5</text>
+<line x1="80" y1="384" x2="1200" y2="384" stroke="#5A6266" stroke-width="1" />
+<rect x="80" y="384" width="1120" height="50" fill="#252A2D" />
+<text x="96.0" y="417.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="normal">Metric 04</text>
+<text x="704.0" y="417.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">78</text>
+<text x="944.0" y="417.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">74</text>
+<text x="1184.0" y="417.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">-4</text>
+<line x1="80" y1="434" x2="1200" y2="434" stroke="#5A6266" stroke-width="1" />
+<rect x="80" y="434" width="1120" height="50" fill="#252A2D" />
+<text x="96.0" y="467.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="normal">Metric 05</text>
+<text x="704.0" y="467.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">61</text>
+<text x="944.0" y="467.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">65</text>
+<text x="1184.0" y="467.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">+4</text>
+<line x1="80" y1="484" x2="1200" y2="484" stroke="#5A6266" stroke-width="1" />
+<rect x="80" y="484" width="1120" height="50" fill="#252A2D" />
+<text x="96.0" y="517.0" text-anchor="start" fill="#F4F5F5" font-size="22" font-weight="normal">Metric 06</text>
+<text x="704.0" y="517.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">72</text>
+<text x="944.0" y="517.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">78</text>
+<text x="1184.0" y="517.0" text-anchor="end" fill="#F4F5F5" font-size="22" font-weight="normal">+6</text>
+<line x1="80" y1="534" x2="1200" y2="534" stroke="#5A6266" stroke-width="1" />
+</g>
+</g>
+<g id="takeaway-slot" data-pptx-placeholder="body" data-pptx-idx="3" data-pptx-bounds="80 558 1120 56" data-pptx-vertical-align="center">
+<text id="takeaway-carrier" data-pptx-carrier="true" x="80.0" y="581.4" font-size="26" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{KEY_MESSAGE}}</text>
+</g>
+<g id="source-slot" data-pptx-placeholder="body" data-pptx-idx="4" data-pptx-bounds="80 628 1120 24" data-pptx-vertical-align="center">
+<text id="source-carrier" data-pptx-carrier="true" x="80.0" y="642.4" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SOURCE}}</text>
+</g>
+<g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-idx="5" data-pptx-bounds="80 674.4 38.4 38.4" data-pptx-vertical-align="center">
+<text id="page-number-carrier" data-pptx-carrier="true" x="80.0" y="697.34" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="10.67" data-pptx-native-defaults="true">{{PAGE_NUM}}</text>
+</g>
+<g id="footer-slot" data-pptx-placeholder="footer" data-pptx-idx="6" data-pptx-bounds="118.4 674.43 921.6 38.33" data-pptx-vertical-align="center">
+<text id="footer-carrier" data-pptx-carrier="true" x="118.4" y="697.33" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="10.67" data-pptx-native-defaults="true">{{SECTION_NAME}}</text>
+</g>
+</svg>

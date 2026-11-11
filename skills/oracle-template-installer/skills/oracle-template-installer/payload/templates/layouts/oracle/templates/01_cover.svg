@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="01_cover" data-pptx-layout-name="01 封面">
+<rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false" />
+<image id="layout-background" x="0" y="0" width="1280" height="720" href="../images/preview-cover-background.png" preserveAspectRatio="none" data-pptx-layer="layout" data-pptx-editable="false" data-pptx-background="image" data-pptx-brand-asset="cover-background" /><image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark" /><image id="cover-wordmark" x="76.71" y="118.88" width="160.09" height="33.6" href="../images/preview-wordmark.svg" preserveAspectRatio="xMidYMid meet" data-pptx-layer="layout" data-pptx-editable="false" data-pptx-brand-asset="wordmark-on-dark" /><rect id="cover-accent" x="83.34" y="437.39" width="38.4" height="3.84" fill="#DCE2E4" stroke="none" data-pptx-layer="layout" data-pptx-editable="false" data-pptx-brand-fill="cover-accent" /><g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="83.21 225.6 672 134.4" data-pptx-vertical-align="center">
+<text id="title-carrier" data-pptx-carrier="true" x="83.21" y="283.2" font-size="64" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{TITLE}}</text>
+</g>
+<g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-idx="1" data-pptx-bounds="83.21 369.51 672 35.83" data-pptx-vertical-align="center">
+<text id="subtitle-carrier" data-pptx-carrier="true" x="83.21" y="388.71" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="21.33" data-pptx-native-defaults="true">{{SUBTITLE}}</text>
+</g>
+<g id="author-slot" data-pptx-placeholder="body" data-pptx-idx="2" data-pptx-bounds="83.21 477.12 533.12 27.96" data-pptx-vertical-align="center">
+<text id="author-carrier" data-pptx-carrier="true" x="83.21" y="497.1" font-size="24" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{AUTHOR}}</text>
+</g>
+<g id="date-slot" data-pptx-placeholder="date" data-pptx-idx="3" data-pptx-bounds="83.21 512.64 533.12 93.98" data-pptx-vertical-align="top">
+<text id="date-carrier" data-pptx-carrier="true" x="83.21" y="530.64" font-size="20" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{DATE}}</text>
+</g>
+</svg>

@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="04_ending" data-pptx-layout-name="23 结束">
+<rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false" />
+<rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false" /><image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark" /><line id="ending-rule" x1="80" y1="520" x2="192" y2="520" stroke="#5A6266" stroke-width="1" data-pptx-layer="layout" data-pptx-editable="false" />
+<g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80 240 1120 156" data-pptx-vertical-align="center">
+<text id="title-carrier" data-pptx-carrier="true" x="80.0" y="297.6" font-size="64" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{THANK_YOU}}</text>
+</g>
+<g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-idx="1" data-pptx-bounds="80 422 1040 76" data-pptx-vertical-align="top">
+<text id="subtitle-carrier" data-pptx-carrier="true" x="80.0" y="441.2" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="21.33" data-pptx-native-defaults="true">{{ENDING_SUBTITLE}}</text>
+</g>
+<g id="contact-slot" data-pptx-placeholder="body" data-pptx-idx="2" data-pptx-bounds="80 552 1040 70" data-pptx-vertical-align="center">
+<text id="contact-carrier" data-pptx-carrier="true" x="80.0" y="573.6" font-size="24" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{CONTACT_INFO}}</text>
+</g>
+<g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-idx="3" data-pptx-bounds="80 674.4 38.4 38.4" data-pptx-vertical-align="center">
+<text id="page-number-carrier" data-pptx-carrier="true" x="80.0" y="697.34" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="10.67" data-pptx-native-defaults="true">{{PAGE_NUM}}</text>
+</g>
+<g id="footer-slot" data-pptx-placeholder="footer" data-pptx-idx="4" data-pptx-bounds="118.4 674.43 921.6 38.33" data-pptx-vertical-align="center">
+<text id="footer-carrier" data-pptx-carrier="true" x="118.4" y="697.33" font-weight="normal" text-anchor="start" fill="#B8BFC1" font-size="10.67" data-pptx-native-defaults="true">{{SECTION_NAME}}</text>
+</g>
+</svg>

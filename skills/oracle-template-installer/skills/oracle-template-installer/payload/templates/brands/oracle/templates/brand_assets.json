@@ -1,0 +1,27 @@
+{
+  "schema": "ppt-master.brand-assets.v1",
+  "assets": {
+    "cover-background": {
+      "path": "images/oracle-title-pillar-dark.jpg",
+      "sha256": "3644e98848b8dc36ad774b22a688e08f3fb5a4fecb10908aec722a1e6a3a219f"
+    },
+    "wordmark-on-dark": {
+      "path": "images/oracle-wordmark-white.svg",
+      "sha256": "99f21ea7e3622f4921145a382230c8024682e376c3cebbc7a9b4d847bec7c0e8"
+    },
+    "corner-mark": {
+      "path": "images/oracle-otag.emf",
+      "sha256": "51d67140624a137b6d086735f045f70ddbf32d8017e544af675f82c156666e2d"
+    },
+    "agenda-decoration": {
+      "path": "images/oracle-agenda-decoration.svg",
+      "sha256": "2d556f70084c65780e61139b79ff23a8a3fb03c44c942970b5128bb477c3f62d"
+    }
+  },
+  "colors": {
+    "cover-accent": "#F0CC72",
+    "agenda-card-fill": "#464F4F",
+    "agenda-card-accent": "#99ADAE",
+    "content-divider": "#8B8580"
+  }
+}

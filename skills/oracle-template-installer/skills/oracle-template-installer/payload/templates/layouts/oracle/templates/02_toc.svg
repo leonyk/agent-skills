@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="08_toc" data-pptx-layout-name="02 五项目录">
+  <ns0:rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false"/>
+  <ns0:rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark"/>
+  <ns0:image id="agenda-decoration" data-pptx-layer="layout" data-pptx-editable="false" x="686.0203789509" y="0" width="593.9796210491" height="395.9851505569" href="../images/agenda-decoration-neutral.svg" preserveAspectRatio="none" clip-path="url(#agenda-art-clip)" data-pptx-brand-asset="agenda-decoration"/>
+  <ns0:rect id="agenda-card-1" x="83.2" y="264" width="192" height="211.2" fill="#41484C" data-pptx-brand-fill="agenda-card-fill" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-accent-1" x="83.21" y="264" width="192" height="9.6" fill="#AEB7BB" data-pptx-brand-fill="agenda-card-accent" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-card-2" x="314.51" y="264" width="192" height="211.2" fill="#41484C" data-pptx-brand-fill="agenda-card-fill" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-accent-2" x="314.51" y="264" width="192" height="9.6" fill="#AEB7BB" data-pptx-brand-fill="agenda-card-accent" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-card-3" x="545.82" y="264" width="192" height="211.2" fill="#41484C" data-pptx-brand-fill="agenda-card-fill" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-accent-3" x="545.82" y="264" width="192" height="9.6" fill="#AEB7BB" data-pptx-brand-fill="agenda-card-accent" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-card-4" x="777.14" y="264" width="192" height="211.2" fill="#41484C" data-pptx-brand-fill="agenda-card-fill" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-accent-4" x="777.14" y="264" width="192" height="9.6" fill="#AEB7BB" data-pptx-brand-fill="agenda-card-accent" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-card-5" x="1008.45" y="264" width="192" height="211.2" fill="#41484C" data-pptx-brand-fill="agenda-card-fill" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:rect id="agenda-accent-5" x="1008.45" y="264" width="192" height="9.6" fill="#AEB7BB" data-pptx-brand-fill="agenda-card-accent" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80.72 19.15 565.18 86.4" data-pptx-vertical-align="bottom">
+    <ns0:text id="title-carrier" data-pptx-carrier="true" x="80.72" y="94.35" font-size="32" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{PAGE_TITLE}}</ns0:text>
+  </ns0:g>
+  <ns0:defs>
+    <ns0:clipPath id="agenda-art-clip" clipPathUnits="userSpaceOnUse">
+      <ns0:polygon points="719.80,0.00 1280.00,0.00 1280.00,288.00 719.80,288.00"/>
+    </ns0:clipPath>
+  </ns0:defs>
+  <ns0:g id="item-1-title-slot" data-pptx-placeholder="body" data-pptx-idx="1" data-pptx-bounds="92.8 268.8 172.8 100.8" data-pptx-vertical-align="bottom">
+    <ns0:text id="item-1-title-carrier" data-pptx-carrier="true" x="92.8" y="362.14" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{ITEM_1}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-1-body-slot" data-pptx-placeholder="body" data-pptx-idx="2" data-pptx-bounds="92.8 369.6 172.8 100.8" data-pptx-vertical-align="top">
+    <ns0:text id="item-1-body-carrier" data-pptx-carrier="true" x="92.8" y="388.8" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{DETAIL_1}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-2-title-slot" data-pptx-placeholder="body" data-pptx-idx="3" data-pptx-bounds="324.11 268.8 172.8 100.8" data-pptx-vertical-align="bottom">
+    <ns0:text id="item-2-title-carrier" data-pptx-carrier="true" x="324.11" y="362.14" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{ITEM_2}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-2-body-slot" data-pptx-placeholder="body" data-pptx-idx="4" data-pptx-bounds="324.11 369.6 172.8 100.8" data-pptx-vertical-align="top">
+    <ns0:text id="item-2-body-carrier" data-pptx-carrier="true" x="324.11" y="388.8" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{DETAIL_2}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-3-title-slot" data-pptx-placeholder="body" data-pptx-idx="5" data-pptx-bounds="555.42 268.8 172.8 100.8" data-pptx-vertical-align="bottom">
+    <ns0:text id="item-3-title-carrier" data-pptx-carrier="true" x="555.42" y="362.14" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{ITEM_3}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-3-body-slot" data-pptx-placeholder="body" data-pptx-idx="6" data-pptx-bounds="555.42 369.6 172.8 100.8" data-pptx-vertical-align="top">
+    <ns0:text id="item-3-body-carrier" data-pptx-carrier="true" x="555.42" y="388.8" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{DETAIL_3}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-4-title-slot" data-pptx-placeholder="body" data-pptx-idx="7" data-pptx-bounds="786.74 268.8 172.8 100.8" data-pptx-vertical-align="bottom">
+    <ns0:text id="item-4-title-carrier" data-pptx-carrier="true" x="786.74" y="362.14" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{ITEM_4}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-4-body-slot" data-pptx-placeholder="body" data-pptx-idx="8" data-pptx-bounds="786.74 369.6 172.8 100.8" data-pptx-vertical-align="top">
+    <ns0:text id="item-4-body-carrier" data-pptx-carrier="true" x="786.74" y="388.8" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{DETAIL_4}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-5-title-slot" data-pptx-placeholder="body" data-pptx-idx="9" data-pptx-bounds="1018.05 268.8 172.8 100.8" data-pptx-vertical-align="bottom">
+    <ns0:text id="item-5-title-carrier" data-pptx-carrier="true" x="1018.05" y="362.14" font-size="21.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{ITEM_5}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="item-5-body-slot" data-pptx-placeholder="body" data-pptx-idx="10" data-pptx-bounds="1018.05 369.6 172.8 100.8" data-pptx-vertical-align="top">
+    <ns0:text id="item-5-body-carrier" data-pptx-carrier="true" x="1018.05" y="388.8" font-size="21.33" font-weight="normal" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{DETAIL_5}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="page-number-slot" data-pptx-placeholder="slide-number" data-pptx-idx="11" data-pptx-bounds="80 674.4 38.4 38.4" data-pptx-vertical-align="center">
+    <ns0:text id="page-number-carrier" data-pptx-carrier="true" x="80" y="697.01" font-size="10.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{PAGE_NUM}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="footer-slot" data-pptx-placeholder="footer" data-pptx-idx="12" data-pptx-bounds="118.4 674.43 921.6 38.33" data-pptx-vertical-align="center">
+    <ns0:text id="footer-carrier" data-pptx-carrier="true" x="118.4" y="697.01" font-size="10.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SECTION_NAME}}</ns0:text>
+  </ns0:g>
+</ns0:svg>

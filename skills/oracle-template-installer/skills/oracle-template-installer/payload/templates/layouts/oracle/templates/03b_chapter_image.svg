@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Arial" font-size="16" data-pptx-master="oracle-master" data-pptx-master-name="Oracle Layout" data-pptx-layout="09_chapter_image" data-pptx-layout-name="04 图片章节">
+  <ns0:rect id="master-background" x="0" y="0" width="1280" height="720" fill="#F3F3F3" data-pptx-layer="master" data-pptx-editable="false"/>
+  <ns0:rect id="layout-background" x="0" y="0" width="1280" height="720" fill="#252A2D" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:image id="brand-mark-master" data-pptx-layer="master" data-pptx-editable="false" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark"/>
+  <ns0:rect id="chapter-accent" x="81.54" y="406.08" width="38.4" height="3.84" fill="#DCE2E4" data-pptx-brand-fill="cover-accent" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:image id="brand-mark-overlay" x="1197.44" y="678.72" width="41.28" height="41.28" href="../images/preview-brand-mark.png" preserveAspectRatio="xMidYMid meet" data-pptx-brand-asset="corner-mark" data-pptx-layer="layout" data-pptx-editable="false"/>
+  <ns0:g id="title-slot" data-pptx-placeholder="title" data-pptx-idx="0" data-pptx-bounds="80.72 245.37 460.8 134.4" data-pptx-vertical-align="bottom">
+    <ns0:text id="title-carrier" data-pptx-carrier="true" x="80.72" y="361.1" font-size="53.33" font-weight="bold" text-anchor="start" fill="#F4F5F5" data-pptx-native-defaults="true">{{CH_TITLE}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="subtitle-slot" data-pptx-placeholder="subtitle" data-pptx-idx="1" data-pptx-bounds="81.54 434.14 460.8 71.52" data-pptx-vertical-align="top">
+    <ns0:text id="subtitle-carrier" data-pptx-carrier="true" x="81.54" y="458.14" font-size="26.67" font-weight="normal" text-anchor="start" fill="#B8BFC1" data-pptx-native-defaults="true">{{SUBTITLE}}</ns0:text>
+  </ns0:g>
+  <ns0:g id="picture-slot" data-pptx-placeholder="picture" data-pptx-idx="2" data-pptx-bounds="640 0 640 720">
+    <ns0:svg id="picture-carrier" data-pptx-carrier="true" x="640" y="0" width="640" height="720" viewBox="0.00015 0 0.9997 1" preserveAspectRatio="none" overflow="hidden" data-pptx-crop="1">
+      <ns0:image href="../images/image94.png" x="0" y="0" width="1" height="1" preserveAspectRatio="none" clip-path="url(#picture-slot-clip)"/>
+    </ns0:svg>
+  </ns0:g>
+  <ns0:defs>
+    <ns0:clipPath id="picture-slot-clip" clipPathUnits="userSpaceOnUse">
+      <ns0:polygon points="0.0001500000,0.0000000000 0.9998500000,0.0000000000 0.9998500000,1.0000000000 0.9353693500,1.0000000000 0.9353693500,0.9426666667 0.8708887000,0.9426666667 0.8708887000,1.0000000000 0.0001500000,1.0000000000"/>
+    </ns0:clipPath>
+  </ns0:defs>
+</ns0:svg>
