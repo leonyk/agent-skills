@@ -1,6 +1,6 @@
 {
-  "name": "oracle-template-installer",
-  "version": "0.1.1",
+  "name": "oracle-ppt-template",
+  "version": "0.1.2",
   "description": "在 macOS 上按范围安装或复用 PPT Master，并安全安装固定 Oracle Brand 与 Layout。",
   "author": {
     "name": "Kai Yin"

@@ -1,5 +1,5 @@
 ---
-name: oracle-template-installer
+name: oracle-ppt-template
 description: 在 macOS 安装或检查 PPT Master 的固定 Oracle Brand 与 Layout，处理重复安装、模板冲突及中断恢复。用户请求制作演示文稿时使用 PPT Master；请求安装、注册或恢复 Oracle 模板时使用本技能。
 ---
 

@@ -5,10 +5,10 @@
   },
   "plugins": [
     {
-      "name": "oracle-template-installer",
+      "name": "oracle-ppt-template",
       "source": {
         "source": "local",
-        "path": "./skills/oracle-template-installer"
+        "path": "./skills/oracle-ppt-template"
       },
       "policy": {
         "installation": "AVAILABLE",

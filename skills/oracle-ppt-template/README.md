@@ -8,16 +8,16 @@
 
 ```sh
 codex plugin marketplace add leonyk/agent-skills
-codex plugin add oracle-template-installer@agent-skills
+codex plugin add oracle-ppt-template@agent-skills
 ```
 
-开启新的 Codex 会话，选择 `oracle-template-installer`。安装插件只取得技能文件；PPT Master 和 Oracle 模板在后续安装交互中才会写入。
+开启新的 Codex 会话，选择 `oracle-ppt-template`。安装插件只取得技能文件；PPT Master 和 Oracle 模板在后续安装交互中才会写入。
 
 开发时可在隔离的 `CODEX_HOME` 注册本地仓库。将下面路径替换为实际值：
 
 ```sh
 CODEX_HOME=/absolute/test/codex-home codex plugin marketplace add /absolute/agent-skills --json
-CODEX_HOME=/absolute/test/codex-home codex plugin add oracle-template-installer@agent-skills --json
+CODEX_HOME=/absolute/test/codex-home codex plugin add oracle-ppt-template@agent-skills --json
 CODEX_HOME=/absolute/test/codex-home codex plugin list --marketplace agent-skills --json
 ```
 
@@ -29,11 +29,11 @@ CODEX_HOME=/absolute/test/codex-home codex plugin list --marketplace agent-skill
 
 ```sh
 mkdir -p /absolute/project/.agents/skills
-ln -s /absolute/agent-skills/skills/oracle-template-installer/skills/oracle-template-installer \
-  /absolute/project/.agents/skills/oracle-template-installer
+ln -s /absolute/agent-skills/skills/oracle-ppt-template/skills/oracle-ppt-template \
+  /absolute/project/.agents/skills/oracle-ppt-template
 ```
 
-开启新的 Cursor 会话，在技能列表中确认 `oracle-template-installer`，再运行安装交互。个人本地使用可将链接位置改为 `~/.agents/skills/oracle-template-installer`。保留链接指向的完整目录，脚本、payload 和 runtime-release 都必须可读。
+开启新的 Cursor 会话，在技能列表中确认 `oracle-ppt-template`，再运行安装交互。个人本地使用可将链接位置改为 `~/.agents/skills/oracle-ppt-template`。保留链接指向的完整目录，脚本、payload 和 runtime-release 都必须可读。
 
 Cursor 官方文档列出 `.agents/skills/`、`.cursor/skills/` 及其用户级目录；本插件采用共享目录，不要求 Cursor 读取 Codex marketplace。链接能否在所用 Cursor 版本中被发现仍须实测。全局本地技能不会自动分发到远程 worker；本说明不承诺 Cloud Agents 分发。
 
@@ -41,17 +41,17 @@ Cursor 官方文档列出 `.agents/skills/`、`.cursor/skills/` 及其用户级�
 
 向 agent 提供两个独立选择及项目根，例如：
 
-> 使用 oracle-template-installer。PPT Master 选择项目范围，Oracle 模板也选择项目范围。项目根是 `/absolute/project`。先检查候选，再计划安装。
+> 使用 oracle-ppt-template。PPT Master 选择项目范围，Oracle 模板也选择项目范围。项目根是 `/absolute/project`。先检查候选，再计划安装。
 
 两个范围必须一致。两个都选项目时，允许与现有全局安装共存，但项目运行时、依赖环境和模板库必须真正独立。多份真实候选需要选择具体目标；相同真实目录的别名只算一个候选。
 
 相同模板且索引正确时完整跳过。缺少合法注册条目时补注册。发生冲突时，agent 展示全部差异、完整备份安排和计划摘要，取得你对该计划的明确批准后才更新。摘要用于检测计划是否过期，本身不是批准。
 
-具体执行顺序见[安装技能](skills/oracle-template-installer/SKILL.md)，手动命令与恢复步骤见[命令说明](skills/oracle-template-installer/references/cli.md)。安装结束后核对 JSON 验证结果中的实际目标、解释器、备份和事务回执。中断后保留回执，使用 `recover` 协调现场；第三方改动会阻止覆盖。
+具体执行顺序见[安装技能](skills/oracle-ppt-template/SKILL.md)，手动命令与恢复步骤见[命令说明](skills/oracle-ppt-template/references/cli.md)。安装结束后核对 JSON 验证结果中的实际目标、解释器、备份和事务回执。中断后保留回执，使用 `recover` 协调现场；第三方改动会阻止覆盖。
 
 ## 核对支持范围
 
-固定官方基线为 PPT Master `v6.8.0` 提交 `5e8856be0da8e6bc85c4aa28acc614478f7b7137`，Oracle 载荷保持原分享包字节。完整 23 页的运行时结构验证不等于 PowerPoint 视觉保真或任意小页数 Quick 导出资格。字体不随包分发。精确依赖、来源、许可及导出限制见[版本与限制](skills/oracle-template-installer/references/release.md)。
+固定官方基线为 PPT Master `v6.8.0` 提交 `5e8856be0da8e6bc85c4aa28acc614478f7b7137`，Oracle 载荷保持原分享包字节。完整 23 页的运行时结构验证不等于 PowerPoint 视觉保真或任意小页数 Quick 导出资格。字体不随包分发。精确依赖、来源、许可及导出限制见[版本与限制](skills/oracle-ppt-template/references/release.md)。
 
 更新插件后，重新检查与计划目标；不会自动把未知运行时原地打补丁。卸载 Codex 插件只移除客户端插件安装，不代表已删除 PPT Master、模板库或备份。
 
