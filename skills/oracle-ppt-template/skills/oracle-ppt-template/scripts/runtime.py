@@ -21,6 +21,7 @@ PAYLOAD = SKILL / "payload"
 KINDS = ("brand", "layout")
 BINDING = "oracle-runtime-binding.json"
 PROXY = "http://127.0.0.1:8080"
+TOOL_CACHES = {".ruff_cache", ".pytest_cache", ".mypy_cache"}
 
 
 class RuntimeFailure(ValueError):
@@ -305,6 +306,16 @@ def read_binding(runtime: Path) -> RuntimeBinding | None:
     return result
 
 
+def check_tool_cache(directory: Path) -> None:
+    for root, folders, files in os.walk(directory, followlinks=False):
+        for name in folders + files:
+            path = Path(root) / name
+            if path.is_symlink():
+                raise RuntimeFailure(f"symlink in tool cache: {path}")
+            if name in files and (not path.is_file() or path.suffix in {".py", ".pyc", ".pyo", ".so", ".pyd", ".dylib", ".pth"} or os.access(path, os.X_OK)):
+                raise RuntimeFailure(f"executable or special file in tool cache: {path}")
+
+
 def fingerprint(runtime: Path, lock: dict | None = None) -> dict[str, str]:
     lock = lock or load_release()
     names = {name for name in lock["runtime_files"] if not library_file(name)}
@@ -313,10 +324,19 @@ def fingerprint(runtime: Path, lock: dict | None = None) -> dict[str, str]:
         for name in folders + files:
             if (parent / name).is_symlink():
                 raise RuntimeFailure(f"symlink in import tree: {parent / name}")
+        for name in list(folders):
+            if name in TOOL_CACHES:
+                check_tool_cache(parent / name)
+                folders.remove(name)
         for name in files:
             path = parent / name
             relative_name = path.relative_to(runtime).as_posix()
             if relative_name in names:
+                continue
+            if relative_name.startswith("scripts/tests/"):
+                if name == ".env" or name.startswith(".env.") or name in {"auth.json", "credentials.json"}:
+                    raise RuntimeFailure(f"private configuration in test tree: {relative_name}")
+                names.add(relative_name)
                 continue
             cached = re.fullmatch(r"(.+)\.cpython-\d+(?:\.opt-\d+)?\.pyc", name)
             source = parent.parent / (cached[1] + ".py") if cached else None

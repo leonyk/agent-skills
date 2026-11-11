@@ -449,10 +449,18 @@ def classification_checks(runtime: Path, python: Path, work: Path) -> dict:
     (unknown / rt.BINDING).unlink()
     source = unknown / "scripts/apply_template.py"
     source.write_text(source.read_text() + "\n# Isolated unknown-fingerprint qualification fixture.\n")
+    cache_data = unknown / "scripts/.ruff_cache/CACHEDIR.TAG"
+    cache_data.parent.mkdir()
+    cache_data.write_text("Signature: linter cache\n")
+    development_test = unknown / "scripts/tests/test_local.py"
+    development_test.parent.mkdir()
+    development_test.write_text("def test_local(): pass\n")
     rt.run([str(python), "-B", "-c", "import py_compile,sys; py_compile.compile(sys.argv[1], doraise=True)", str(source)],
            work=work / "cache-logs", name="compile-cache")
     (unknown / ".env").write_text("NON_SECRET_SENTINEL=excluded\n")
     check("unknown", unknown, "reuse", python)
+    require(not (work / "unknown/registration-view/scripts/.ruff_cache").exists(), "view copied a tool cache")
+    require((work / "unknown/registration-view/scripts/tests/test_local.py").read_bytes() == development_test.read_bytes(), "view dropped development test code")
     cache = next((unknown / "scripts/__pycache__").glob("apply_template.*.pyc"))
     copied_cache = work / "unknown/registration-view" / cache.relative_to(unknown)
     require(cache.read_bytes() == copied_cache.read_bytes() and cache.stat().st_mtime_ns == copied_cache.stat().st_mtime_ns,

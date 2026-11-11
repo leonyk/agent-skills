@@ -11,6 +11,7 @@ import tempfile
 import unittest
 
 import installer as ins
+import runtime as rt
 
 
 TEST_ROOT: Path | None = None
@@ -154,6 +155,54 @@ class InstallerTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             ins.atomic_rename(staged, destination, replace=False)
         self.assertEqual(before, (ins.snapshot(staged), ins.snapshot(destination)))
+
+    def test_linter_cache_does_not_change_runtime_fingerprint(self):
+        scripts = self.root / "scripts"
+        scripts.mkdir()
+        (scripts / "main.py").write_text("print('ready')\n")
+        lock = {"runtime_files": {"scripts/main.py": "expected"}}
+        before = rt.fingerprint(self.root, lock)
+        cache = scripts / ".ruff_cache" / "0.17.3"
+        cache.mkdir(parents=True)
+        (cache.parent / "CACHEDIR.TAG").write_text("Signature: cache data\n")
+        (cache / "123456").write_bytes(b"cached diagnostics")
+        self.assertEqual(before, rt.fingerprint(self.root, lock))
+
+    def test_development_test_tree_is_preserved_in_runtime_fingerprint(self):
+        scripts = self.root / "scripts"
+        tests = scripts / "tests"
+        tests.mkdir(parents=True)
+        (scripts / "main.py").write_text("print('ready')\n")
+        (tests / "test_main.py").write_text("def test_ready(): pass\n")
+        (tests / "fixture.json").write_text('{"value": 1}\n')
+        actual = rt.fingerprint(self.root, {"runtime_files": {"scripts/main.py": "expected"}})
+        self.assertEqual(set(actual), {"scripts/main.py", "scripts/tests/test_main.py", "scripts/tests/fixture.json"})
+        self.assertEqual(actual["scripts/tests/test_main.py"], rt.sha256((tests / "test_main.py").read_bytes()))
+
+    def test_tool_cache_cannot_hide_executable_files_or_symlinks(self):
+        scripts = self.root / "scripts"
+        cache = scripts / ".ruff_cache"
+        cache.mkdir(parents=True)
+        (scripts / "main.py").write_text("print('ready')\n")
+        lock = {"runtime_files": {"scripts/main.py": "expected"}}
+        executable = cache / "hidden.py"
+        executable.write_text("raise RuntimeError('hidden')\n")
+        with self.assertRaises(rt.RuntimeFailure):
+            rt.fingerprint(self.root, lock)
+        executable.unlink()
+        (cache / "linked").symlink_to(scripts / "main.py")
+        with self.assertRaises(rt.RuntimeFailure):
+            rt.fingerprint(self.root, lock)
+
+    def test_unknown_shadow_package_still_blocks_runtime_fingerprint(self):
+        scripts = self.root / "scripts"
+        scripts.mkdir()
+        (scripts / "main.py").write_text("print('ready')\n")
+        shadow = scripts / "main"
+        shadow.mkdir()
+        (shadow / "__init__.py").write_text("raise RuntimeError('shadow')\n")
+        with self.assertRaises(rt.RuntimeFailure):
+            rt.fingerprint(self.root, {"runtime_files": {"scripts/main.py": "expected"}})
 
 
 def main():

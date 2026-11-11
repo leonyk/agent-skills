@@ -50,7 +50,7 @@ A managed candidate must match its release and controlled hashes. An unmanaged c
 
 The copied runtime's own `register_template.py oracle --kind <kind>` runs first with `--dry-run`, then without it. The dry run must preserve index bytes. Both final Oracle entries must equal the pinned official registrar's output in `runtime-lock.json`, and every other JSON value must remain unchanged. The frozen Oracle files are checked again. The return value contains the two candidate index byte strings. The caller publishes them through its own transaction; the real library's registration CLI is never invoked.
 
-An unexpected file in the runtime's script import tree blocks reuse. Bytecode caches for declared source files are copied with their source timestamps so the isolated interpreter sees the same import behavior. The view excludes credentials, environment directories, and user projects. Required unlisted modules cannot disappear silently from the program being tested.
+Unexpected production modules in the script import tree block reuse. Development files under `scripts/tests/` are fingerprinted and copied into the view, so they cannot silently disappear from the program being tested. Data-only Ruff, pytest, and mypy caches are excluded; executable files and symlinks inside those caches block reuse. Bytecode caches for declared source files retain their source timestamps. The view excludes credentials, environment directories, and user projects.
 
 ## Verification command
 
